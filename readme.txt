@@ -1,7 +1,7 @@
 === WooCommerce Smart Send Shipping ===
 Contributors: sp4cecat
 Donate link: http://codexmedia.com.au/donations
-Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, jigoshop, postage, shipping, shop, tax
+Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax
 Requires at least: 3.5.1
 Tested up to: 3.5.1
 Stable tag: 1.0.1
