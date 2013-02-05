@@ -1,4 +1,4 @@
-=== Jigoshop Smart Send Shipping ===
+=== WooCommerce Smart Send Shipping ===
 Contributors: sp4cecat
 Donate link: http://codexmedia.com.au/donations
 Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, jigoshop, postage, shipping, shop, tax
