@@ -81,6 +81,26 @@ class WC_smart_send extends WC_Shipping_Method
 				'type' 			=> 'text',
 				'description'	=> __( ' VIP password issued by Smart Send' )
 				),
+			'server' => array(
+				'title' 		=> __( 'Smart Send Server', 'woocommerce' ),
+				'type' 			=> 'select',
+				'description' 	=> __( ' Select test server if you are using the test account.' ),
+				'default' 		=> 'live',
+				'options'		=> array(
+					'live' 		=> __( 'Live Server', 'woocommerce' ),
+					'test' 	=> __( 'Test Server', 'woocommerce' )
+					)
+				),
+			'weights' => array(
+				'title' 		=> __( 'Weight Units', 'woocommerce' ),
+				'type' 			=> 'select',
+				'default' 		=> 'kg',
+				'description' 	=> __( ' Weight unit products are measured in.' ),
+				'options'		=> array(
+					'kg' 		=> __( 'Kilograms', 'woocommerce' ),
+					'g' 	=> __( 'Grams', 'woocommerce' )
+					)
+				),
 			'origintown' => array(
 				'title' 			=> __('Origin Town', 'woocommerce' ),
 				'type' 			=> 'text',
@@ -192,7 +212,10 @@ public function calculate_shipping( $package )
 
 	$this->_setDestinationVars();
 
-	$smartSendQuote = new smartSendUtils( $this->vipusername, $this->vippassword );
+	$testServer = false;
+	if( $this->server == 'test' ) $testServer = true;
+
+	$smartSendQuote = new smartSendUtils( $this->vipusername, $this->vippassword, $testServer );
 
 	if( is_null( $this->_shipToTown ) ) $this->_shipToTown = $smartSendQuote->getFirstTown( $this->_shipToPostcode );
 
@@ -231,8 +254,11 @@ public function calculate_shipping( $package )
 					$errString = '<b>Shipping calculation error';
 					if( count( $shipping_errors ) > 1 ) $errString .= 's';
 					$errString .= ':</b><br/><ul><li>' . implode( $shipping_errors, "</li>\n<li>" ) . '</ul>';
-					$woocommerce->add_error($errString);
+					$woocommerce->add_error(__($errString, 'WC_smart_send');
+					return;
 				}
+
+				if( $this->weights == 'g' ) $weight = ceil( $weight / 1000 );
 
 				$cartTotal += $_product->price; // @NOTE We COULD call the get_cart_total method, but it's just going to repeat the above ..
 
@@ -303,6 +329,12 @@ public function calculate_shipping( $package )
 				$smartSendQuote->addItem( $item );
 
 			$quoteResult = $smartSendQuote->getQuote();
+			
+			if( $quoteResult->ObtainQuoteResult->StatusCode != 0 )
+			{
+				$woocommerce->add_error( __('Shipping calculation error: ' . $quoteResult->ObtainQuoteResult->StatusMessages->string, 'WC_smart_send' ) );
+				return;
+			}
 			$quotes = $quoteResult->ObtainQuoteResult->Quotes->Quote;
 
 			if( !is_array( $quotes ) ) $quotes[0] = $quotes;
@@ -310,6 +342,7 @@ public function calculate_shipping( $package )
 			$r = 0;
 			foreach( $quotes as $quote )
 			{
+				if( empty($quote->TotalPrice) ) continue;
 				$rateTotal = $quote->TotalPrice + $this->fee;
 				$r++;
 				$rate = array(
