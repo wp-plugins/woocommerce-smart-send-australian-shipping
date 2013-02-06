@@ -254,7 +254,7 @@ public function calculate_shipping( $package )
 					$errString = '<b>Shipping calculation error';
 					if( count( $shipping_errors ) > 1 ) $errString .= 's';
 					$errString .= ':</b><br/><ul><li>' . implode( $shipping_errors, "</li>\n<li>" ) . '</ul>';
-					$woocommerce->add_error(__($errString, 'WC_smart_send');
+					$woocommerce->add_error(__($errString, 'WC_smart_send'));
 					return;
 				}
 
