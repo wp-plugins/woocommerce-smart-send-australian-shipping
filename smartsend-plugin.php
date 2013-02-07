@@ -337,7 +337,7 @@ public function calculate_shipping( $package )
 			}
 			$quotes = $quoteResult->ObtainQuoteResult->Quotes->Quote;
 
-			if( !is_array( $quotes ) ) $quotes[0] = $quotes;
+			if( !@is_array( $quotes ) ) $quotes[0] = $quotes;
 
 			$r = 0;
 			foreach( $quotes as $quote )
