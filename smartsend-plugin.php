@@ -81,6 +81,17 @@ class WC_smart_send extends WC_Shipping_Method
 				'type' 			=> 'text',
 				'description'	=> __( ' VIP password issued by Smart Send' )
 				),
+			'show_results' => array(
+				'title' 		=> __( 'Display Results', 'woocommerce' ),
+				'type' 			=> 'select',
+				'description' 	=> __( ' Select which shipping solutions to display.' ),
+				'default' 		=> 'all',
+				'options'		=> array(
+					'all' 		=> __( 'Show All Results', 'woocommerce' ),
+					'cheap' 	=> __( 'Show Only Cheapest', 'woocommerce' ),
+					'fast' 	=> __( 'Show Only Fastest', 'woocommerce' )
+					)
+				),	
 			'server' => array(
 				'title' 		=> __( 'Smart Send Server', 'woocommerce' ),
 				'type' 			=> 'select',
@@ -337,7 +348,21 @@ public function calculate_shipping( $package )
 			}
 			$quotes = $quoteResult->ObtainQuoteResult->Quotes->Quote;
 
-			if( !@is_array( $quotes ) ) $quotes[0] = $quotes;
+			$useQuotes = array();
+
+			if( !@is_array( $quotes ) ) $useQuotes[0] = $quotes;
+			else $useQuotes = $quotes;
+
+			// $woocommerce->add_error( print_r( $useQuotes, true ) );
+
+			$quotes = array();
+
+			if( $this->show_results == 'cheap' )
+				$quotes[0] = array_shift( $useQuotes );
+			else if( $this->show_results == 'fast' )
+				$quotes[0] = array_pop( $useQuotes );
+			else
+				$quotes = $useQuotes;
 
 			$r = 0;
 			foreach( $quotes as $quote )
