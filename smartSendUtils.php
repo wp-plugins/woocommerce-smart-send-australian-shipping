@@ -78,6 +78,8 @@ class smartSendUtils
 	// Object containing the results of last quote
 	private $lastQuoteResults;
 
+	protected $_debug = false;
+
 	/**
 	 * Initialise the Smart Send SOAP API
 	 * 
@@ -94,6 +96,9 @@ class smartSendUtils
 		}
 		$this->username = $username;
 		$this->password = $password;
+
+		// Set to test server if username starts with 'test@'
+		if( !$useTest && preg_match( '/^test@/', $username ) ) $useTest = true;
 
 		$this->ssWSDL = ( $useTest ) ? $this->testWSDL : $this->liveWSDL;
 
@@ -138,7 +143,11 @@ class smartSendUtils
 			'Items' => $this->quoteItems
 		);
 
+		if( $this->_debug ) smart_send_debug_log( 'params', $quoteParams['request'] );
+
 		$this->lastQuoteResults = $this->soapClient->obtainQuote( $quoteParams );
+
+		if( $this->_debug ) smart_send_debug_log( 'results', $this->lastQuoteResults );
 
 		return $this->lastQuoteResults;
 	}
@@ -295,4 +304,9 @@ class smartSendUtils
 		// ACT's 0200-0299 already caught
 		if( $first == 0 ) return 'NT';
 	}
+}
+
+function smart_send_debug_log( $file, $data )
+{
+	error_log( date( "Y-m-d H:i:s" ) . " - $_SERVER[REMOTE_ADDR]\n" . print_r( $data, true ), 3, dirname( __FILE__ ) . '/log-'.$file.'.log' );
 }

@@ -277,14 +277,16 @@ public function calculate_shipping( $package )
 				if( $tailDelivery == 'yes' && $weight >= 30 && $sessionTailDelivery == 'yes' ) $deliveryFlag = true;
 				if( $tailPickup > 0 && $weight > $tailPickup ) $pickupFlag = true;
 
-				// Add the cart item to the list for API calculations
-				$itemList[] = array(
-					'Description'   => $this->type,
-					'Weight'        => $weight,
-					'Depth'         => $width,
-					'Length'        => $length,
-					'Height'        => $height
-					);
+
+				// Add the cart item/s to the list for API calculations
+				foreach( range( 1, $values['quantity'] ) as $blah )
+					$itemList[] = array(
+						'Description'   => $this->type,
+						'Weight'        => $weight,
+						'Depth'         => $width,
+						'Length'        => $length,
+						'Height'        => $height
+						);
 			}
 		}
 
