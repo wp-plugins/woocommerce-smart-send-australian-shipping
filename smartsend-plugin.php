@@ -1,6 +1,6 @@
 <?php
 
-class WC_smart_send extends WC_Shipping_Method
+class WC_Smart_Send extends WC_Shipping_Method
 {
 
 	protected $_shipToTown;
@@ -18,40 +18,66 @@ class WC_smart_send extends WC_Shipping_Method
 		$this->title 		  				= 'Smart Send';
 		$this->tax_status					= 'none';
 
-		add_action( 'woocommerce_update_options_shipping_smart_send', array(&$this, 'process_admin_options'));
-
 		$this->init_form_fields();
+
+		// Force availability including with AU as only country
+		$this->_setCountry();
 
 		// Load the settings.
 		$this->init_settings();		// Define user set variables
 
-		foreach( $this->settings as $k => $v ) $this->$k = $v;
+		foreach( $this->settings as $k => $v )
+			$this->$k = $v;
+
+		add_action( 'woocommerce_update_options_shipping_smart_send', array(&$this, 'process_admin_options'));
+	}
+
+	protected function _setCountry()
+	{
+		$changed = false;
+		$mySettings = get_option( $this->plugin_id . $this->id . '_settings', null );
+		$mySettings['availability'] = 'all';
+
+		update_option( $this->plugin_id . $this->id . '_settings', $mySettings );
 	}
 
 	// Set the destination town and postcode to use. If not Australia, disable the plugin
-	protected function _setDestinationVars()
+	protected function _setDestinationVars($postArray)
 	{
-		if( is_admin() ) return;
+		smart_send_debug_log('setdestinationvars', $postArray );
+		// if( is_admin() ) return;
 		global $woocommerce;
 
-		if( isset( $_POST['post_data']))
+		$this->_shipToCountry = 'AU';
+
+		if( isset( $postArray['calc_shipping'] ) && $postArray['calc_shipping'] == 1 )
 		{
-			foreach( explode( '&', $_POST['post_data']) as $var )
+			$this->_shipToState = 		$postArray['calc_shipping_state'];
+			$this->_shipToPostcode = 	$postArray['calc_shipping_postcode'];
+		}
+		else if( isset( $_POST['post_data']))
+		{
+			$postDataString = urldecode( $postArray['post_data'] );
+			foreach( explode( '&', $postDataString) as $var )
 			{
 				list( $k, $v ) = explode( '=', $var );
 				$postData[$k] = $v;
 			}
-	      if($postData['shipping-postcode'] ) $this->_shipToPostcode = $postData['shipping-postcode'];
-	      else if(isset($postData['billing-postcode']) ) $this->_shipToPostcode = $postData['billing-postcode'];
-	      
-	      if($postData['shipping-city'] ) $this->_shipToTown = $postData['shipping-city'];
-	      else if(isset($postData['billing-city']) ) $this->_shipToTown = $postData['billing-city'];
+			if( $postData['shiptobilling'] == 1 )
+				$postPrefix = 'billing';
+			else
+				$postPrefix = 'shipping';
+
+			$this->_shipToPostcode = $postData[$postPrefix.'_postcode'];
+			$this->_shipToTown = $postData[$postPrefix.'_city'];
+			$this->_shipToState = $postData[$postPrefix.'_state'];
 		}
 		else
 		{
 			$this->_shipToCountry 	= $woocommerce->customer->get_shipping_country();
-			$this->_shipToState 		= $woocommerce->customer->get_shipping_state();
+			$this->_shipToState 	= $woocommerce->customer->get_shipping_state();
 			$this->_shipToPostcode 	= $woocommerce->customer->get_shipping_postcode();
+			$this->_shipToTown 		= $woocommerce->customer->get_shipping_city();
 		}
 	}
 
@@ -193,10 +219,10 @@ class WC_smart_send extends WC_Shipping_Method
 					)
 				)
 			);
-foreach( smartSendUtils::$ssPackageTypes as $type )
-{
-	$this->form_fields['type']['options'][$type] = $type;
-}
+	foreach( smartSendUtils::$ssPackageTypes as $type )
+	{
+		$this->form_fields['type']['options'][$type] = $type;
+	}
 }
 
 public function admin_options() {
@@ -205,10 +231,16 @@ public function admin_options() {
 	<p>Smart Send offers multiple shipping options for items sent <strong>within Australia.</strong></p>
 	<?php
 	if( !$this->vipusername || !$this->vippassword )
-		{?>
+	{?>
 	<p style="color: red">Note: You must have a Smart Send VIP account to use this plugin. Visit <a href="https://www.smartsend.com.au/vipClientEnquiry.cfm" target="_blank">Smart Send</a> to register.</span></p>
 	<?php
-}
+	}
+	if (!extension_loaded('soap'))
+	{
+		?>
+	<p style="color: red">Note: the <b>SOAP</b> extension must be loaded for Smart Send shipping to work. Contact your hosting company, ISP or systems administrator and request that the soap extension be activated.</span></p>
+		<?php
+	}
 ?>
 
 <table class="form-table">
@@ -219,9 +251,11 @@ public function admin_options() {
 
 public function calculate_shipping( $package )
 {
+
+	smart_send_debug_log('calcshipping', $_POST );
 	global $woocommerce;
 
-	$this->_setDestinationVars();
+	$this->_setDestinationVars($_POST);
 
 	$testServer = false;
 	if( $this->server == 'test' ) $testServer = true;
@@ -265,7 +299,7 @@ public function calculate_shipping( $package )
 					$errString = '<b>Shipping calculation error';
 					if( count( $shipping_errors ) > 1 ) $errString .= 's';
 					$errString .= ':</b><br/><ul><li>' . implode( $shipping_errors, "</li>\n<li>" ) . '</ul>';
-					$woocommerce->add_error(__($errString, 'WC_smart_send'));
+					$woocommerce->add_error(__($errString, 'WC_Smart_Send'));
 					return;
 				}
 
@@ -345,7 +379,7 @@ public function calculate_shipping( $package )
 			
 			if( $quoteResult->ObtainQuoteResult->StatusCode != 0 )
 			{
-				$woocommerce->add_error( __('Shipping calculation error: ' . $quoteResult->ObtainQuoteResult->StatusMessages->string, 'WC_smart_send' ) );
+				$woocommerce->add_error( __('Shipping calculation error: ' . $quoteResult->ObtainQuoteResult->StatusMessages->string, 'WC_Smart_Send' ) );
 				return;
 			}
 			$quotes = $quoteResult->ObtainQuoteResult->Quotes->Quote;
@@ -395,9 +429,17 @@ public function calculate_shipping( $package )
 	{
 		global $woocommerce;
 
-		if( $this->enabled == 'no' ) return false;
+		smart_send_debug_log('available', $package );
 
-		if( $package['destination']['country'] != 'AU' ) return false;
+		if( $this->enabled == 'no' )
+			return false;
+
+		$this->availability = true;
+
+		$destinationCountry = $package['destination']['country'];
+
+		if( $package['destination']['country'] != 'AU' )
+			return false;
 
 		if( empty($this->vipusername) || empty( $this->vippassword ) || empty( $this->origintown ) || empty( $this->originpostcode )  )
 			return false;
@@ -429,7 +471,7 @@ public function calculate_shipping( $package )
 
 function add_smart_send_method( $methods )
 {
-	$methods[] = 'WC_smart_send';
+	$methods[] = 'WC_Smart_Send';
 	return $methods;
 }
 add_filter('woocommerce_shipping_methods', 'add_smart_send_method' );
@@ -467,7 +509,9 @@ function addSmartSendUserShippingOptions()
 {
 	$settings = get_option( 'woocommerce_smart_send_settings' );
 
-	if( !( $settings['receipted'] == 'optional' || $settings['assurance'] == 'optional' || $settingss['tail_delivery'] == 'yes' ) ) return;
+	echo '<!-- '; print_r( $_SESSION ); echo '-->';
+
+	if( !( $settings['receipted'] == 'optional' || $settings['assurance'] == 'optional' || $settings['tail_delivery'] == 'yes' ) ) return;
 	?>
 	<div class="col2-set" id="smart_send_shipping_options">
 	<hr/>
@@ -491,7 +535,7 @@ function addSmartSendUserShippingOptions()
 				<label for="smart_send_lift_delivery">
 					<input type="checkbox" class="smart_send_option" id="smart_send_lift_delivery" data-option="delivery" <?php checked( $_SESSION['ss_option_delivery'] ); ?>/>
 					I require tail-lift delivery<br>
-         <small>If any items are <?php echo WC_smart_send::$tailMin; ?>kg or over, extra assistance will be provided</small></label>
+         <small>If any items are <?php echo WC_Smart_Send::$tailMin; ?>kg or over, extra assistance will be provided</small></label>
 			</div>
 			<?php
 		}

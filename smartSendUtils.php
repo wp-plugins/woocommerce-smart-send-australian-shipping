@@ -78,7 +78,7 @@ class smartSendUtils
 	// Object containing the results of last quote
 	private $lastQuoteResults;
 
-	protected $_debug = false;
+	public static $_debug = false;
 
 	/**
 	 * Initialise the Smart Send SOAP API
@@ -98,7 +98,8 @@ class smartSendUtils
 		$this->password = $password;
 
 		// Set to test server if username starts with 'test@'
-		if( !$useTest && preg_match( '/^test@/', $username ) ) $useTest = true;
+		if( !$useTest && preg_match( '/^test@/', $username ) )
+			$useTest = true;
 
 		$this->ssWSDL = ( $useTest ) ? $this->testWSDL : $this->liveWSDL;
 
@@ -116,7 +117,8 @@ class smartSendUtils
 
 		foreach( $required as $req )
 		{
-			if( is_null( $this->$req ) ) throw new Exception( "Cannot get quote without '$req' parameter" );
+			if( is_null( $this->$req ) )
+				throw new Exception( "Cannot get quote without '$req' parameter" );
 		}
 
 		if( $this->userType == 'EBAY' && is_null($this->onlineSellerId ))
@@ -140,14 +142,15 @@ class smartSendUtils
 			'ReceiptedDelivery' => $this->receiptedDelivery,
 			'TailLift' => $this->tailLift,
 			'TransportAssurance' => $this->transportAssurance,
+			'DeveloperId' => '929fc786-8199-4b81-af60-029e2bca4f39',
 			'Items' => $this->quoteItems
 		);
 
-		if( $this->_debug ) smart_send_debug_log( 'params', $quoteParams['request'] );
+		smart_send_debug_log( 'params', $quoteParams['request'] );
 
 		$this->lastQuoteResults = $this->soapClient->obtainQuote( $quoteParams );
 
-		if( $this->_debug ) smart_send_debug_log( 'results', $this->lastQuoteResults );
+		smart_send_debug_log( 'results', $this->lastQuoteResults );
 
 		return $this->lastQuoteResults;
 	}
@@ -308,5 +311,6 @@ class smartSendUtils
 
 function smart_send_debug_log( $file, $data )
 {
-	error_log( date( "Y-m-d H:i:s" ) . " - $_SERVER[REMOTE_ADDR]\n" . print_r( $data, true ), 3, dirname( __FILE__ ) . '/log-'.$file.'.log' );
+	if (smartSendUtils::$_debug)
+		error_log( date( "Y-m-d H:i:s" ) . " - $_SERVER[REMOTE_ADDR]\n" . print_r( $data, true ), 3, dirname( __FILE__ ) . '/log-'.$file.'.log' );
 }
