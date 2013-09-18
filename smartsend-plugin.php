@@ -271,7 +271,7 @@ public function calculate_shipping( $package )
 		$tailPickup = $this->tail_pickup;
 		$tailDelivery = $this->tail_delivery;
 		// User optin for tail delivery
-		$sessionTailDelivery = ( $_SESSION['ss_option_delivery'] ) ? $_SESSION['ss_option_delivery'] : 'no';
+		$sessionTailDelivery = !empty($_SESSION['ss_option_delivery']) ? $_SESSION['ss_option_delivery'] : 'no';
 
 		$cartItems = $package['contents'];
 
@@ -377,11 +377,12 @@ public function calculate_shipping( $package )
 
 			$quoteResult = $smartSendQuote->getQuote();
 			
-			if( $quoteResult->ObtainQuoteResult->StatusCode != 0 )
+			if( $quoteResult->ObtainQuoteResult->StatusCode != 0 && empty($quoteResult->ObtainQuoteResult->Quotes->Quote))
 			{
 				$woocommerce->add_error( __('Shipping calculation error: ' . $quoteResult->ObtainQuoteResult->StatusMessages->string, 'WC_Smart_Send' ) );
 				return;
 			}
+			
 			$quotes = $quoteResult->ObtainQuoteResult->Quotes->Quote;
 
 			$useQuotes = array();
