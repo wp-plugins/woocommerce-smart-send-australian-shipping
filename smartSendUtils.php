@@ -82,10 +82,12 @@ class smartSendUtils
 
 	/**
 	 * Initialise the Smart Send SOAP API
-	 * 
+	 *
 	 * @param string $username Smart Send VIP username
 	 * @param string $password Smart Send VIP password
-	 * @param bool $useTest Whether to use the test API. Default is false.
+	 * @param bool   $useTest  Whether to use the test API. Default is false.
+	 *
+	 * @throws Exception
 	 */
 	
 	public function __construct( $username = NULL, $password = NULL, $useTest = false )
@@ -110,9 +112,14 @@ class smartSendUtils
 	public function getQuote()
 	{
 		$required = array(
-			'postcodeFrom', 'suburbFrom', 'stateFrom',
-			'postcodeTo', 'suburbTo', 'stateTo',
-			'userType', 'tailLift'
+			'postcodeFrom',
+			'suburbFrom',
+			'stateFrom',
+			'postcodeTo',
+			'suburbTo',
+			'stateTo',
+			'userType',
+			'tailLift'
 		);
 
 		foreach( $required as $req )
@@ -128,22 +135,22 @@ class smartSendUtils
 				throw new Exception( "Promotional code required for user type 'PROMOTION'." );
 
 		$quoteParams['request'] = array(
-			'VIPUsername' => $this->username,
-			'VIPPassword' => $this->password,
-			'PostcodeFrom' => $this->postcodeFrom,
-			'SuburbFrom' => $this->suburbFrom,
-			'StateFrom' => $this->stateFrom,
-			'PostcodeTo' => $this->postcodeTo,
-			'SuburbTo' => $this->suburbTo,
-			'StateTo' => $this->stateTo,
-			'UserType' => $this->userType,
-			'OnlineSellerID' => $this->onlineSellerId,
-			'PromotionalCode' => $this->promotionalCode,
-			'ReceiptedDelivery' => $this->receiptedDelivery,
-			'TailLift' => $this->tailLift,
+			'VIPUsername'        => $this->username,
+			'VIPPassword'        => $this->password,
+			'PostcodeFrom'       => $this->postcodeFrom,
+			'SuburbFrom'         => $this->suburbFrom,
+			'StateFrom'          => $this->stateFrom,
+			'PostcodeTo'         => $this->postcodeTo,
+			'SuburbTo'           => $this->suburbTo,
+			'StateTo'            => $this->stateTo,
+			'UserType'           => $this->userType,
+			'OnlineSellerID'     => $this->onlineSellerId,
+			'PromotionalCode'    => $this->promotionalCode,
+			'ReceiptedDelivery'  => $this->receiptedDelivery,
+			'TailLift'           => $this->tailLift,
 			'TransportAssurance' => $this->transportAssurance,
-			'DeveloperId' => '929fc786-8199-4b81-af60-029e2bca4f39',
-			'Items' => $this->quoteItems
+			'DeveloperId'        => '929fc786-8199-4b81-af60-029e2bca4f39',
+			'Items'              => $this->quoteItems
 		);
 
 		smart_send_debug_log( 'params', $quoteParams['request'] );
@@ -172,23 +179,26 @@ class smartSendUtils
 	}
 
 	/**
-	 * @param string Set optional parameters:
-	 *   userType: 						EBAY, CORPORATE, PROMOTION, CASUAL, REFERRAL
-	 *   onlineSellerID: 			Only if userType = EBAY
-	 *   promotionalCode: 		Only if userType = PROMOTIONAL
-	 *   receiptedDelivery: 	Customer signs to indicate receipt of package
-	 *   tailLift:						For heavy items; either a tail lift truck or extra staff
-	 *   transportAssurance:	If insurance is required
+	 * @param $param
+	 * @param $value
+	 *
+	 * @internal param \Set $string optional parameters:
+	 *           userType:                        EBAY, CORPORATE, PROMOTION, CASUAL, REFERRAL
+	 *           onlineSellerID:            Only if userType = EBAY
+	 *           promotionalCode:        Only if userType = PROMOTIONAL
+	 *           receiptedDelivery:    Customer signs to indicate receipt of package
+	 *           tailLift:                        For heavy items; either a tail lift truck or extra staff
+	 *           transportAssurance:    If insurance is required
 	 */
 	
 	public function setOptional( $param, $value )
 	{
 		$allowed = array(
-			'userType' => array( 'EBAY', 'PROMOTIONAL', 'VIP' ),
-			'onlineSellerId' => '',
-			'promotionalCode' => '',
-			'receiptedDelivery' => array( 'true', 'false' ),
-			'tailLift' => array( 'NONE', 'PICKUP', 'DELIVERY', 'BOTH' ),
+			'userType'           => array( 'EBAY', 'PROMOTIONAL', 'VIP' ),
+			'onlineSellerId'     => '',
+			'promotionalCode'    => '',
+			'receiptedDelivery'  => array( 'true', 'false' ),
+			'tailLift'           => array( 'NONE', 'PICKUP', 'DELIVERY', 'BOTH' ),
 			'transportAssurance' => ''
 		);
 		if( !in_array( $param, array_keys( $allowed ) ) )
@@ -206,8 +216,10 @@ class smartSendUtils
 
 	/**
 	 * Add items to be shipped
-	 * 
+	 *
 	 * @param array $itemData [ Description, Depth, Height, Length, Weight ]
+	 *
+	 * @throws Exception
 	 */
 	public function addItem( array $itemData )
 	{
@@ -231,9 +243,12 @@ class smartSendUtils
 
 	/**
 	 * Retrieve official list of locations - postcode, suburb, state
-	 * 
-	 * @param bool $cached true (default) for returning cached data, false for fresh data
-	 * 
+	 *
+	 * @param bool $cachedRequested
+	 *
+	 * @internal param bool $cached true (default) for returning cached data, false for fresh data
+	 *
+	 * @return array|mixed
 	 */
 	public function getLocations( $cachedRequested = true )
 	{
