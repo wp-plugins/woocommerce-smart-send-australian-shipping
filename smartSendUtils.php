@@ -78,7 +78,7 @@ class smartSendUtils
 	// Object containing the results of last quote
 	private $lastQuoteResults;
 
-	public static $_debug = false;
+	public static $_debug = true;
 
 	/**
 	 * Initialise the Smart Send SOAP API
@@ -104,6 +104,8 @@ class smartSendUtils
 			$useTest = true;
 
 		$this->ssWSDL = ( $useTest ) ? $this->testWSDL : $this->liveWSDL;
+
+		smart_send_debug_log( 'utilsInit', array( 'username: '.$this->username, 'password: '.$this->password, 'endpoint: '.$this->ssWSDL));
 
 		$this->soapClient = new SoapClient( $this->ssWSDL );
 		$this->locationsCacheFile = dirname(__FILE__) . '/locations.data';

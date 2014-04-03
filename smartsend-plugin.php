@@ -13,23 +13,30 @@ function woocommerce_smart_send_shipping_init()
 		public static $tailMin = 30;
 
 		function __construct() {
-			$this->id           = 'smart_send';
-			$this->method_title = 'Smart Send';
-			$this->title        = 'Smart Send';
-			$this->tax_status   = 'none';
-
-			$this->init_form_fields();
+			$this->id                 = 'smart_send';
+			$this->method_title       = __( 'Smart Send' );
+			$this->method_description = __( 'Smart Send Australioan Shipping' );
+			$this->title              = __( 'Smart Send' );
+			$this->tax_status         = 'none';
 
 			// Force availability including with AU as only country
 			$this->_setCountry();
 
+			$this->init();
+		}
+
+		function init()
+		{
+			$this->init_form_fields();
+
 			// Load the settings.
 			$this->init_settings(); // Define user set variables
-
 			foreach ( $this->settings as $k => $v )
+			{
 				$this->$k = $v;
+			}
 
-			add_action( 'woocommerce_update_options_shipping_smart_send', array( &$this, 'process_admin_options' ) );
+			add_action( 'woocommerce_update_options_shipping_smart_send', array( $this, 'process_admin_options' ) );
 		}
 
 		protected function _setCountry() {
@@ -47,7 +54,13 @@ function woocommerce_smart_send_shipping_init()
 
 			$this->_shipToCountry = 'AU';
 
-			if ( isset( $postArray['calc_shipping'] ) && $postArray['calc_shipping'] == 1 ) {
+			if( !empty($postArray['state']))
+			{
+				$this->_shipToTown     = $postArray['city'];
+				$this->_shipToState    = $postArray['state'];
+				$this->_shipToPostcode = $postArray['postcode'];
+			}
+			else if ( isset( $postArray['calc_shipping'] ) && $postArray['calc_shipping'] == 1 ) {
 				$this->_shipToState    = $postArray['calc_shipping_state'];
 				$this->_shipToPostcode = $postArray['calc_shipping_postcode'];
 			} else if ( isset( $_POST['post_data'] ) ) {
@@ -70,6 +83,8 @@ function woocommerce_smart_send_shipping_init()
 				$this->_shipToPostcode = $woocommerce->customer->get_shipping_postcode();
 				$this->_shipToTown     = $woocommerce->customer->get_shipping_city();
 			}
+
+			$blah = $this->_shipToCountry;
 		}
 
 		public function init_form_fields() {
@@ -240,7 +255,7 @@ function woocommerce_smart_send_shipping_init()
 
 			$smartSendQuote = new smartSendUtils( $this->vipusername, $this->vippassword );
 
-			if ( is_null( $this->_shipToTown ) )
+			if ( empty( $this->_shipToTown ) )
 				$this->_shipToTown = $smartSendQuote->getFirstTown( $this->_shipToPostcode );
 
 			if ( ! $this->_shipToTown )
@@ -483,7 +498,7 @@ function smartSendAjaxSetExtras()
 		( $option == 'receipted' && $settings['receipted'] != 'optional' ) ||
 		( $option == 'assurance' && $settings['assurance'] != 'optional' ) ||
 		( $option == 'delivery' && $settings['tail_delivery'] != 'yes' ) )
-			exit( 'You cannot set that.');
+		exit( 'You cannot set that.');
 
 	// Enough sanity, set the session var and return the value
 	$_SESSION["ss_option_$option"] = $status;
@@ -506,7 +521,7 @@ function addSmartSendUserShippingOptions()
 	if( !( $settings['receipted'] == 'optional' || $settings['assurance'] == 'optional' || $settings['tail_delivery'] == 'yes' ) ) return;
 	?>
 	<div class="col2-set" id="smart_send_shipping_options">
-	<hr/>
+		<hr/>
 		<h4>Other shipping options</h4>
 		<?php
 		if( $settings['receipted'] == 'optional' )
@@ -516,9 +531,9 @@ function addSmartSendUserShippingOptions()
 				<label for="smart_send_receipted">
 					<input type="checkbox" class="smart_send_option" id="smart_send_receipted" data-option="receipted" <?php checked( $_SESSION['ss_option_receipted'] ); ?>/>
 					I require receipted delivery<br>
-         <small>A signature will be required upon delivery</small></label>
+					<small>A signature will be required upon delivery</small></label>
 			</div>
-			<?php
+		<?php
 		}
 		if( $settings['tail_delivery'] == 'yes' )
 		{
@@ -527,9 +542,9 @@ function addSmartSendUserShippingOptions()
 				<label for="smart_send_lift_delivery">
 					<input type="checkbox" class="smart_send_option" id="smart_send_lift_delivery" data-option="delivery" <?php checked( $_SESSION['ss_option_delivery'] ); ?>/>
 					I require tail-lift delivery<br>
-         <small>If any items are <?php echo WC_Smart_Send::$tailMin; ?>kg or over, extra assistance will be provided</small></label>
+					<small>If any items are <?php echo WC_Smart_Send::$tailMin; ?>kg or over, extra assistance will be provided</small></label>
 			</div>
-			<?php
+		<?php
 		}
 		if( $settings['assurance'] == 'optional' )
 		{
@@ -538,54 +553,54 @@ function addSmartSendUserShippingOptions()
 				<label for="smart_send_assurance">
 					<input type="checkbox" class="smart_send_option" id="smart_send_assurance" data-option="assurance" <?php checked( $_SESSION['ss_option_assurance'] ); ?>/>
 					I require transport assurance<br>
-         <small>Insure items against damage for a small additional fee</small></label>
+					<small>Insure items against damage for a small additional fee</small></label>
 			</div>
-			<?php
+		<?php
 		}
 
 		// Session variables:
 		// smartSendAssurance, smartSendReceipted, SmartSendLift
 		?>
 	</div>
-		<br clear="left"><br>
+	<br clear="left"><br>
 	<script type="text/javascript">
-	(function($) {
-	   var ssParams = {
-	           action:     'smart_send_set_xtras',
-	           ssNonce:    '<?php echo wp_create_nonce('ss_noncical'); ?>'
-	       },
-	       jqhxr;
+		(function($) {
+			var ssParams = {
+					action:     'smart_send_set_xtras',
+					ssNonce:    '<?php echo wp_create_nonce('ss_noncical'); ?>'
+				},
+				jqhxr;
 
-	   $('.smart_send_option').click( function()
-	   {
-			console.log( $(this).data('option'));
-			var $opDiv = $(this).closest('div');
-			var _self = $(this);
-			$opDiv.block({
-				message: null,
-				overlayCSS: {
-					background: '#fff url(' + woocommerce_params.ajax_loader_url + ') no-repeat 250px',
-					opacity: 0.6
-				}
+			$('.smart_send_option').click( function()
+			{
+				console.log( $(this).data('option'));
+				var $opDiv = $(this).closest('div');
+				var _self = $(this);
+				$opDiv.block({
+					message: null,
+					overlayCSS: {
+						background: '#fff url(' + woocommerce_params.ajax_loader_url + ') no-repeat 250px',
+						opacity: 0.6
+					}
+				});
+				ssParams.ssOption = $(this).attr('data-option');
+				ssParams.ssStatus = ( $(this).is(':checked') ) ? 'yes' : 'no';
+				jqxhr = $.ajax({
+					type: 'POST',
+					url: 	woocommerce_params.ajax_url,
+					data: ssParams,
+					success: function( resp )
+					{
+						$opDiv.unblock();
+						if( resp == 'yes' ) _self.attr('checked', 'checked');
+						else _self.removeAttr('checked');
+						$('body').trigger('update_checkout');
+					}
+				});
 			});
-			ssParams.ssOption = $(this).attr('data-option');
-			ssParams.ssStatus = ( $(this).is(':checked') ) ? 'yes' : 'no';
-			jqxhr = $.ajax({
-				type: 'POST',
-				url: 	woocommerce_params.ajax_url,
-				data: ssParams,
-				success: function( resp )
-				{
-					$opDiv.unblock();
-					if( resp == 'yes' ) _self.attr('checked', 'checked');
-					else _self.removeAttr('checked');
-					$('body').trigger('update_checkout');
-				}
-			});
-		});
-	})(jQuery);
+		})(jQuery);
 	</script>
-	<?php
+<?php
 }
 
 add_action( 'woocommerce_checkout_after_customer_details', 'addSmartSendUserShippingOptions' );
