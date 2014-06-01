@@ -11,11 +11,12 @@ function woocommerce_smart_send_shipping_init()
 
 		// Minimum weight at which tail-lift assistance is triggered
 		public static $tailMin = 30;
+		private static $ssVersion = 140;
 
 		function __construct() {
 			$this->id                 = 'smart_send';
 			$this->method_title       = __( 'Smart Send' );
-			$this->method_description = __( 'Smart Send Australioan Shipping' );
+			$this->method_description = __( 'Smart Send Australian Shipping' );
 			$this->title              = __( 'Smart Send' );
 			$this->tax_status         = 'none';
 
@@ -23,6 +24,7 @@ function woocommerce_smart_send_shipping_init()
 			$this->_setCountry();
 
 			$this->init();
+
 		}
 
 		function init()
@@ -37,6 +39,14 @@ function woocommerce_smart_send_shipping_init()
 			}
 
 			add_action( 'woocommerce_update_options_shipping_smart_send', array( $this, 'process_admin_options' ) );
+
+			// Check for upgrades
+			if ( self::$ssVersion > get_option('smart_send_updates'))
+			{
+				$this->_smartSendOnInstallUpgrade();
+				update_option('smart_send_updates', self::$ssVersion );
+			}
+
 		}
 
 		protected function _setCountry() {
@@ -69,7 +79,7 @@ function woocommerce_smart_send_shipping_init()
 					list( $k, $v ) = explode( '=', $var );
 					$postData[ $k ] = $v;
 				}
-				if ( $postData['shiptobilling'] == 1 )
+				if ( isset($postData['shiptobilling']) && $postData['shiptobilling'] == 1 )
 					$postPrefix = 'billing';
 				else
 					$postPrefix = 'shipping';
@@ -280,13 +290,14 @@ function woocommerce_smart_send_shipping_init()
 					$_product = $values['data'];
 					$name     = $_product->get_title();
 
+					$prodClass = $_product->get_shipping_class();
+
+					$shippingClass = empty( $prodClass ) ? $this->type : get_term_by('slug', $prodClass, 'product_shipping_class')->name;
+
 					$weight = $length = $width = $height = 0;
 
 					foreach ( array( 'weight', 'length', 'width', 'height' ) as $prodAttr ) {
-						if ( $prodAttr == 'weight' )
-							$weight = ceil( $_product->weight );
-						else
-							$$prodAttr = $_product->$prodAttr;
+						$$prodAttr = $_product->$prodAttr;
 						if ( $$prodAttr <= 0 ) {
 							$shipping_errors[] = "Product <b>$name</b> has no <em>$prodAttr</em> set.";
 						}
@@ -316,7 +327,7 @@ function woocommerce_smart_send_shipping_init()
 					// Add the cart item/s to the list for API calculations
 					foreach ( range( 1, $values['quantity'] ) as $blah )
 						$itemList[] = array(
-							'Description' => $this->type,
+							'Description' => $shippingClass,
 							'Weight'      => $weight,
 							'Depth'       => $width,
 							'Length'      => $length,
@@ -427,7 +438,7 @@ function woocommerce_smart_send_shipping_init()
 		}
 
 		/**
-		 * is_available function.
+		 * is_available function. Returns true if all is good and Smart Send shipping is available
 		 *
 		 * @access public
 		 *
@@ -452,25 +463,28 @@ function woocommerce_smart_send_shipping_init()
 			return apply_filters( 'woocommerce_shipping_' . $this->id . '_is_available', true );
 		}
 
-		/**
-		 * Check if cart has anything over a certain weight
-		 *
-		 * @access protected
-		 *
-		 * @param integer $maxWeight Return true if anything this weight or over
-		 *
-		 * @return bool
-		 */
-		protected function anyOverWeight( $maxWeight ) {
-			global $woocommerce;
-			$cart = $woocommerce->cart->get_cart();
-			foreach ( $cart as $item_id => $values ) {
-				$_product = $values['data'];
-				if ( $_product->weight >= $this->tailMin )
-					return true;
-			}
 
-			return false;
+		/**
+		 * Run on install or upgrade. Checks for and adds Smart Send shipping classes.
+		 */
+		private function _smartSendOnInstallUpgrade()
+		{
+			foreach( smartSendUtils::$ssPackageTypes as $type )
+			{
+				$t = get_term_by( 'name', $type, 'product_shipping_class' );
+
+				if (!$t) // Add shipping class to taxonomies
+				{
+					wp_insert_term(
+						$type,
+						'product_shipping_class',
+						array(
+							'slug' => strtolower( preg_replace( '/\W/', '_', $type ) ),
+							'description' => 'Delivered by '.$type
+						)
+					);
+				}
+			}
 		}
 	}
 }
@@ -483,124 +497,16 @@ function add_smart_send_method( $methods )
 	return $methods;
 }
 
+// Enqueue jQuery and jQuery UI stuff
 add_filter('woocommerce_shipping_methods', 'add_smart_send_method' );
 
-function smartSendAjaxSetExtras()
-{
-	$settings = get_option( 'woocommerce_smart_send_settings' );
-	if( !wp_verify_nonce( $_POST['ssNonce'], 'ss_noncical') ) exit( 'Illegal Ajax action' );
-	$status = $_POST['ssStatus'];
-	if( !in_array( $_POST['ssStatus'], array( 'yes', 'no' ) ) ) exit( 'Invalid value' );
-	$option = $_POST['ssOption'];
-	if( !in_array( $option, array( 'assurance', 'delivery', 'receipted' ) ) ) exit( 'Invalid option' );
+function smartsend_add_frontend_scripts() {
+	wp_enqueue_script('jquery');
+	wp_enqueue_script('jquery-ui-core');
+	wp_enqueue_script('jquery-ui-autocomplete');
 
-	if(
-		( $option == 'receipted' && $settings['receipted'] != 'optional' ) ||
-		( $option == 'assurance' && $settings['assurance'] != 'optional' ) ||
-		( $option == 'delivery' && $settings['tail_delivery'] != 'yes' ) )
-		exit( 'You cannot set that.');
-
-	// Enough sanity, set the session var and return the value
-	$_SESSION["ss_option_$option"] = $status;
-	exit( $_SESSION["ss_option_$option"] );
+	wp_register_style('ss-jquery-ui-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/ui-lightness/jquery-ui.css', false, null);
+	wp_enqueue_style('ss-jquery-ui-style');
 }
 
-// Called by AJAX when options checkboxes checked
-add_action( 'wp_ajax_smart_send_set_xtras', 'smartSendAjaxSetExtras' );
-add_action( 'wp_ajax_nopriv_smart_send_set_xtras', 'smartSendAjaxSetExtras' );
-
-
-// Insert extra Smart Send options on to checkout page:
-// 	- Receipted delivery
-// 	- Tail-lift assistance
-// 	- Transport assurance
-function addSmartSendUserShippingOptions()
-{
-	$settings = get_option( 'woocommerce_smart_send_settings' );
-
-	if( !( $settings['receipted'] == 'optional' || $settings['assurance'] == 'optional' || $settings['tail_delivery'] == 'yes' ) ) return;
-	?>
-	<div class="col2-set" id="smart_send_shipping_options">
-		<hr/>
-		<h4>Other shipping options</h4>
-		<?php
-		if( $settings['receipted'] == 'optional' )
-		{
-			?>
-			<div class="col-1">
-				<label for="smart_send_receipted">
-					<input type="checkbox" class="smart_send_option" id="smart_send_receipted" data-option="receipted" <?php checked( $_SESSION['ss_option_receipted'] ); ?>/>
-					I require receipted delivery<br>
-					<small>A signature will be required upon delivery</small></label>
-			</div>
-		<?php
-		}
-		if( $settings['tail_delivery'] == 'yes' )
-		{
-			?>
-			<div class="col-1">
-				<label for="smart_send_lift_delivery">
-					<input type="checkbox" class="smart_send_option" id="smart_send_lift_delivery" data-option="delivery" <?php checked( $_SESSION['ss_option_delivery'] ); ?>/>
-					I require tail-lift delivery<br>
-					<small>If any items are <?php echo WC_Smart_Send::$tailMin; ?>kg or over, extra assistance will be provided</small></label>
-			</div>
-		<?php
-		}
-		if( $settings['assurance'] == 'optional' )
-		{
-			?>
-			<div class="col-1">
-				<label for="smart_send_assurance">
-					<input type="checkbox" class="smart_send_option" id="smart_send_assurance" data-option="assurance" <?php checked( $_SESSION['ss_option_assurance'] ); ?>/>
-					I require transport assurance<br>
-					<small>Insure items against damage for a small additional fee</small></label>
-			</div>
-		<?php
-		}
-
-		// Session variables:
-		// smartSendAssurance, smartSendReceipted, SmartSendLift
-		?>
-	</div>
-	<br clear="left"><br>
-	<script type="text/javascript">
-		(function($) {
-			var ssParams = {
-					action:     'smart_send_set_xtras',
-					ssNonce:    '<?php echo wp_create_nonce('ss_noncical'); ?>'
-				},
-				jqhxr;
-
-			$('.smart_send_option').click( function()
-			{
-				console.log( $(this).data('option'));
-				var $opDiv = $(this).closest('div');
-				var _self = $(this);
-				$opDiv.block({
-					message: null,
-					overlayCSS: {
-						background: '#fff url(' + woocommerce_params.ajax_loader_url + ') no-repeat 250px',
-						opacity: 0.6
-					}
-				});
-				ssParams.ssOption = $(this).attr('data-option');
-				ssParams.ssStatus = ( $(this).is(':checked') ) ? 'yes' : 'no';
-				jqxhr = $.ajax({
-					type: 'POST',
-					url: 	woocommerce_params.ajax_url,
-					data: ssParams,
-					success: function( resp )
-					{
-						$opDiv.unblock();
-						if( resp == 'yes' ) _self.attr('checked', 'checked');
-						else _self.removeAttr('checked');
-						$('body').trigger('update_checkout');
-					}
-				});
-			});
-		})(jQuery);
-	</script>
-<?php
-}
-
-add_action( 'woocommerce_checkout_after_customer_details', 'addSmartSendUserShippingOptions' );
+add_action('wp_enqueue_scripts', 'smartsend_add_frontend_scripts');

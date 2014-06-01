@@ -3,8 +3,8 @@ Contributors: sp4cecat
 Donate link: http://codexmedia.com.au/donations
 Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax
 Requires at least: 3.5
-Tested up to: 3.8.1
-Stable tag: 1.3.2
+Tested up to: 3.9.1
+Stable tag: 1.4
 License: GPLv2
 
 The WooCommerce Smart Send shipping plugin integrates Australian shipping cost calculations for 'Smart Send' online shipping.
@@ -25,6 +25,12 @@ This plugin requires the WooCommerce e-commerce plugin.
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Under Woocommerce -> Settings -> Shipping, find the Smart Send section and fill out the required fields. You will need a Smart Send VIP account.
 
+== Shipping Classes ==
+
+Shipping classes (eg 'Carton', 'Tube', 'Satchel') can now be set on a per-product basis - just go to the 'shipping' tab on the 'Edit Product' page. This also includes new 'priority' and 'prepaid road' satchels.
+
+If you choose either 'Best fixed price road' or 'Best priority', the calculator will choose the smallest-fitting satchel (comparing maximum weight and dimensions of each possible satchel with that of the product).
+
 == Support ==
 
 Support is available at the [Codex Media website](http://codexmedia.com.au/support "Support");
@@ -34,6 +40,14 @@ Support is available at the [Codex Media website](http://codexmedia.com.au/suppo
 Upgrade through dashboard for added control over results users see and bug fixes.
 
 == Changelog ==
+
+= 1.4 =
+
+Auto-complete dropdown for suburbs when postcode entered (on checkout); fixed-price and priority satchel options for shipping classes
+
+= 1.3.5 =
+
+Added per-product shipping classes; separated logic in to other files
 
 = 1.3.1 =
 
