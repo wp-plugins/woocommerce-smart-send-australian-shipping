@@ -259,7 +259,6 @@ function woocommerce_smart_send_shipping_init()
 		public function calculate_shipping( $package ) {
 
 			smart_send_debug_log( 'calcshipping', $_POST );
-			global $woocommerce;
 
 			$this->_setDestinationVars( $_POST );
 
@@ -293,6 +292,10 @@ function woocommerce_smart_send_shipping_init()
 					$prodClass = $_product->get_shipping_class();
 
 					$shippingClass = empty( $prodClass ) ? $this->type : get_term_by('slug', $prodClass, 'product_shipping_class')->name;
+
+					// Check if valid shipping class
+					if (!in_array( $shippingClass, smartSendUtils::$ssPackageTypes))
+						$shippingClass = $this->settings['type'];
 
 					$weight = $length = $width = $height = 0;
 
