@@ -248,7 +248,7 @@ class smartSendUtils
 		$descriptions = self::$ssPackageTypes;
 
 		if( !in_array( $itemData['Description'], $descriptions ))
-			throw new Exception( 'Item must be one of: ' . implode( ', ', $descriptions ) );
+			throw new Exception( $itemData['Description'].' invalid - item must be one of: ' . implode( ', ', $descriptions ) );
 
 		// Use the best-fitting fixed price or priority satchel based on dimensions given
 		if (in_array($itemData['Description'], array( 'Best fixed price road satchel', 'Best priority satchel')))
@@ -289,8 +289,12 @@ class smartSendUtils
 				$itemData['Weight'] = $newWeight;
 			}
 		}
+		elseif ( in_array( $itemData['Description'], array_keys(self::$ssFixedSatchelParams)))
+		{
+			list( $itemData['Depth'], $itemData['Height'], $itemData['Length'], $itemData['Weight'] ) = self::$ssFixedSatchelParams[$itemData['Description']];
+		}
 		else
-			$itemData['Weight'] = ceil($itemData['Weight']); // Ensure weight is round figure
+			$itemData['Weight'] = ceil($itemData['Weight']); // Ensure weight is round figure if not pre-paid
 
 		$this->quoteItems[] = $itemData;
 	}
