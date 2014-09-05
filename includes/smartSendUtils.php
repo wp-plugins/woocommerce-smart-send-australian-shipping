@@ -93,7 +93,7 @@ class smartSendUtils
 	private $promotionalCode = '';
 	private $onlineSellerId = '';
 
-	private $receiptedDelivery = 'false';
+	private $receiptedDelivery = 0;
 
 	// Object containing the results of last quote
 	private $lastQuoteResults;
@@ -219,7 +219,7 @@ class smartSendUtils
 			'userType'           => array( 'EBAY', 'PROMOTIONAL', 'VIP' ),
 			'onlineSellerId'     => '',
 			'promotionalCode'    => '',
-			'receiptedDelivery'  => array( 'true', 'false' ),
+			'receiptedDelivery'  => array( 'true', 'false', 1, 0 ),
 			'tailLift'           => array( 'NONE', 'PICKUP', 'DELIVERY', 'BOTH' ),
 			'transportAssurance' => ''
 		);
@@ -232,6 +232,14 @@ class smartSendUtils
 		{
 			echo "'$value' is not a valid value for '$param'";
 			return;
+		}
+
+		if ($param == 'receiptedDelivery')
+		{
+			if (!is_numeric($value))
+			{
+				$value = ( $value == 'true' ) ? 1 : 0;
+			}
 		}
 		$this->$param = $value;
 	}
