@@ -18,7 +18,7 @@ function woocommerce_smart_send_shipping_init()
 			$this->method_title       = __( 'Smart Send' );
 			$this->method_description = __( 'Smart Send Australian Shipping' );
 			$this->title              = __( 'Smart Send' );
-			$this->tax_status         = 'none';
+			$this->tax_status         = 'none';  // Smart Send returns tax
 
 			// Force availability including with AU as only country
 			$this->_setCountry();
@@ -100,29 +100,29 @@ function woocommerce_smart_send_shipping_init()
 		public function init_form_fields() {
 			$this->form_fields = array(
 
-				'enabled'           => array(
+				'enabled' => array(
 					'enabled' => __( 'Enable/Disable', 'woocommerce' ),
 					'type'    => 'checkbox',
 					'label'   => __( ' Enable Smart Send shipping', 'woocommerce' ),
 					'default' => 'no',
 				),
-				'denoted'           => array(
+				'denoted' => array(
 					'title'       => __( 'Method Title', 'woocommerce' ),
 					'type'        => 'text',
 					'description' => __( ' Displayed next to each shipping option/price point.', 'woocommerce' ),
 					'default'     => __( 'Courier', 'woocommerce' ),
 				),
-				'vipusername'       => array(
+				'vipusername' => array(
 					'title'       => __( 'VIP Username', 'woocommerce' ),
 					'type'        => 'text',
 					'description' => __( ' VIP username issued by Smart Send' )
 				),
-				'vippassword'       => array(
+				'vippassword' => array(
 					'title'       => __( 'VIP Password', 'woocommerce' ),
 					'type'        => 'text',
 					'description' => __( ' VIP password issued by Smart Send' )
 				),
-				'show_results'      => array(
+				'show_results' => array(
 					'title'       => __( 'Display Results', 'woocommerce' ),
 					'type'        => 'select',
 					'description' => __( ' Select which shipping solutions to display.' ),
@@ -133,7 +133,7 @@ function woocommerce_smart_send_shipping_init()
 						'fast'  => __( 'Show Only Fastest', 'woocommerce' )
 					)
 				),
-				'weights'           => array(
+				'weights' => array(
 					'title'       => __( 'Weight Units', 'woocommerce' ),
 					'type'        => 'select',
 					'default'     => 'kg',
@@ -159,6 +159,15 @@ function woocommerce_smart_send_shipping_init()
 					'type'        => 'select',
 					'description' => '',
 					'default'     => 'Carton'
+				),
+				'tax_status'        => array(
+					'title'   => __( 'Tax Status', 'woocommerce' ),
+					'type'    => 'select',
+					'default' => 'taxable',
+					'options' => array(
+						'taxable' => __( 'Taxable', 'woocommerce' ),
+						'none'    => _x( 'None', 'Tax status', 'woocommerce' )
+					)
 				),
 				'handling_type'     => array(
 					'title'       => __( 'Add handling fee?', 'woocommerce' ),
@@ -299,12 +308,29 @@ function woocommerce_smart_send_shipping_init()
 
 					$weight = $length = $width = $height = 0;
 
-					foreach ( array( 'weight', 'length', 'width', 'height' ) as $prodAttr ) {
+					// Check if variation
+					if( $_product->product_type == 'variation' )
+					{
+						$variationMeta = get_post_meta($_product->variation_id);
+					}
+					else {
+						$variationMeta = false;
+					}
+
+					foreach ( array( 'weight', 'length', 'width', 'height' ) as $prodAttr )
+					{
+						// First, see if it has own settings
 						$$prodAttr = $_product->$prodAttr;
-						if ( $$prodAttr <= 0 ) {
+
+						// If dimension missing, and it is a variation, see if parent product has the setting
+						if ( !$$prodAttr && $variationMeta )
+							$$prodAttr = $variationMeta['_'.$prodAttr][0];
+
+						if ( $$prodAttr <= 0 || !$$prodAttr) {
 							$shipping_errors[] = "Product <b>$name</b> has no <em>$prodAttr</em> set.";
 						}
 					}
+
 					if ( count( $shipping_errors ) ) {
 						$errString = '<b>Shipping calculation error';
 						if ( count( $shipping_errors ) > 1 )
@@ -432,6 +458,7 @@ function woocommerce_smart_send_shipping_init()
 						'id'       => 'smart_send_' . $r,
 						'label'    => $this->denoted . ' - ' . $quote->TransitDescription,
 						'cost'     => $rateTotal,
+						'taxes'    => array( 'GST' => $quote->TotalGST ),
 						'calc_tax' => 'per_order'
 					);
 					$this->add_rate( $rate );
