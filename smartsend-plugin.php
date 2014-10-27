@@ -38,6 +38,9 @@ function woocommerce_smart_send_shipping_init()
 				$this->$k = $v;
 			}
 
+			$this->vipusername = html_entity_decode($this->vipusername);
+			$this->vippassword = html_entity_decode($this->vippassword);
+
 			add_action( 'woocommerce_update_options_shipping_smart_send', array( $this, 'process_admin_options' ) );
 
 			// Check for upgrades
@@ -311,7 +314,7 @@ function woocommerce_smart_send_shipping_init()
 					// Check if variation
 					if( $_product->product_type == 'variation' )
 					{
-						$variationMeta = get_post_meta($_product->variation_id);
+						$variationMeta = get_post_meta($_product->parent->id);
 					}
 					else {
 						$variationMeta = false;

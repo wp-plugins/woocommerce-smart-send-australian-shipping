@@ -98,7 +98,7 @@ class smartSendUtils
 	// Object containing the results of last quote
 	private $lastQuoteResults;
 
-	public static $_debug = true;
+	public static $_debug = false;
 
 	/**
 	 * Initialise the Smart Send SOAP API
