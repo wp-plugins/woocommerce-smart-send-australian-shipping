@@ -163,15 +163,15 @@ function woocommerce_smart_send_shipping_init()
 					'description' => '',
 					'default'     => 'Carton'
 				),
-				'tax_status'        => array(
+/*				'tax_status'        => array(
 					'title'   => __( 'Tax Status', 'woocommerce' ),
 					'type'    => 'select',
-					'default' => 'taxable',
+					'default' => 'none',
 					'options' => array(
 						'taxable' => __( 'Taxable', 'woocommerce' ),
 						'none'    => _x( 'None', 'Tax status', 'woocommerce' )
 					)
-				),
+				),*/
 				'handling_type'     => array(
 					'title'       => __( 'Add handling fee?', 'woocommerce' ),
 					'type'        => 'select',
@@ -297,9 +297,23 @@ function woocommerce_smart_send_shipping_init()
 				$pickupFlag = $deliveryFlag = false;
 				$itemList   = array();
 
+				// First, we check if this is blank (based on cart items), standard, reduced-rate or zero-rate
+				$shippingTaxClass = get_option('woocommerce_shipping_tax_class');
+
+				if ($shippingTaxClass != 'none' )
+				{
+					$_tax = new WC_Tax();
+					$_taxRates = $_tax->get_shipping_tax_rates($shippingTaxClass);
+					$_taxKeys = array_keys($_taxRates);
+					$useTaxId = $_taxKeys[0];
+				}
+				else
+					$useTaxId = 0;
+
 				foreach ( $cartItems as $item_id => $values ) {
 					$_product = $values['data'];
 					$name     = $_product->get_title();
+					$_productMeta = get_post_meta($_product->id);
 
 					$prodClass = $_product->get_shipping_class();
 
@@ -459,11 +473,16 @@ function woocommerce_smart_send_shipping_init()
 					$r ++;
 					$rate = array(
 						'id'       => 'smart_send_' . $r,
-						'label'    => $this->denoted . ' - ' . $quote->TransitDescription,
+						'label'    => $this->denoted.' - '.$quote->TransitDescription,
 						'cost'     => $rateTotal,
-						'taxes'    => array( 'GST' => $quote->TotalGST ),
-						'calc_tax' => 'per_order'
+					    'calc_tax' => 'per_order'
 					);
+
+					if ($useTaxId)
+					{
+						$rate['taxes'] = array( $useTaxId => $quote->TotalGST);
+						$rate['cost'] = $rateTotal - $quote->TotalGST;
+					}
 					$this->add_rate( $rate );
 				}
 

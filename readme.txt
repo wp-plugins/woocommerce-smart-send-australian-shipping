@@ -4,7 +4,7 @@ Donate link: http://codexmedia.com.au/donations
 Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPLv2
 
 The WooCommerce Smart Send shipping plugin integrates Australian shipping cost calculations for 'Smart Send' online shipping.
@@ -41,6 +41,10 @@ Upgrade through dashboard for added control over results users see and bug fixes
 
 == Changelog ==
 
+= 1.4.6 =
+
+ - Use compatible shipping tax rate ID if available
+
 = 1.4.5 =
 
  - Fixed parent checking
@@ -53,87 +57,88 @@ Upgrade through dashboard for added control over results users see and bug fixes
 
 = 1.4.3 =
 
-Boolean settings on quote request
+ - Boolean settings on quote request
 
 = 1.4.2 =
 
-Force dimension to that of pre-paid satchel when necessary
+ - Force dimension to that of pre-paid satchel when necessary
 
 = 1.4.1 =
 
-Shipping class issues fixed
+ - Shipping class issues fixed
 
 = 1.4 =
 
-Auto-complete dropdown for suburbs when postcode entered (on checkout); fixed-price and priority satchel options for shipping classes
+ - Auto-complete dropdown for suburbs when postcode entered (on checkout); fixed-price and priority satchel options for shipping classes
 
 = 1.3.5 =
 
-Added per-product shipping classes; separated logic in to other files
+ - Added per-product shipping classes; separated logic in to other files
 
 = 1.3.1 =
 
-Used init function, and better checking for missing TOWN parameter - search by postcode if missing
+ - Used init function, and better checking for missing TOWN parameter - search by postcode if missing
 
 = 1.3 =
 
-MAJOR FIX: WooCommerce class dependencies, removed checking for plugin orders, uses woocommerce init action and replaced add_error with wc_add_notice
+ - MAJOR FIX: WooCommerce class dependencies, removed checking for plugin orders, uses woocommerce init action and replaced add_error with wc_add_notice
 
 = 1.2.6 =
 
-Cleaned up code, removed 'test server' option, proper variable checking
+ - Cleaned up code, removed 'test server' option, proper variable checking
 
 = 1.2.5 =
 
-Some minor tweaks
+ - Some minor tweaks
 
 = 1.2.3 =
 
-Fixed problem with rounding up weights, better error formatting
+ - Fixed problem with rounding up weights, better error formatting
 
 = 1.2.2 =
 
-Round up weights and better error reporting
+ - Round up weights and better error reporting
 
 = 1.2.1 =
 
-Returned shipping quote if error returned along with prices
+ - Returned shipping quote if error returned along with prices
 
 = 1.2 =
-Fixed some major issues with shipping address data
+
+ - Fixed some major issues with shipping address data
 
 = 1.1.5 = 
 
-Added transparent country allow settings
+ - Added transparent country allow settings
 
 = 1.1.4 =
 
-Minor fixes.
+ - Minor fixes.
 
 = 1.1.3 =
 
-Fixed issues with multiple of same item in cart.
+ - Fixed issues with multiple of same item in cart.
 
 = 1.1.2 =
 
-- Fixed bug when only one results is returned by API
-- Added option for displaying cheapest, fastest or all shipping solutions returned from API.
+ - Fixed bug when only one results is returned by API
+ - Added option for displaying cheapest, fastest or all shipping solutions returned from API.
 
 = 1.1.1 =
 
-- Suppress error when only one result comes back
+ - Suppress error when only one result comes back
 
 = 1.1 =
 
-- Added option for using live or test Smart Send API
-- Added option to specify if your product weights are in grams or kilograms
-- Improved error reporting
-- Minor code improvements
+ - Added option for using live or test Smart Send API
+ - Added option to specify if your product weights are in grams or kilograms
+ - Improved error reporting
+ - Minor code improvements
 
 = 1.0.1 =
 
-- Fixed textual errors on admin screen
-- Removed some debugging code that was causing an error
+ - Fixed textual errors on admin screen
+ - Removed some debugging code that was causing an error
 
 == Frequently Asked Questions ==
 
