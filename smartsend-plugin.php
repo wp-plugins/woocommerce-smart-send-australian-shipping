@@ -11,7 +11,7 @@ function woocommerce_smart_send_shipping_init()
 
 		// Minimum weight at which tail-lift assistance is triggered
 		public static $tailMin = 30;
-		private static $ssVersion = 140;
+		private static $ssVersion = 147;
 
 		function __construct() {
 			$this->id                 = 'smart_send';
@@ -21,10 +21,11 @@ function woocommerce_smart_send_shipping_init()
 			$this->tax_status         = 'none';  // Smart Send returns tax
 
 			// Force availability including with AU as only country
-			$this->_setCountry();
+//			$this->_setCountry();
+
+			add_action( 'woocommerce_update_options_shipping_smart_send', array( $this, 'process_admin_options' ) );
 
 			$this->init();
-
 		}
 
 		function init()
@@ -34,17 +35,14 @@ function woocommerce_smart_send_shipping_init()
 			// Load the settings.
 			$this->init_settings(); // Define user set variables
 			foreach ( $this->settings as $k => $v )
-			{
 				$this->$k = $v;
-			}
 
 			$this->vipusername = html_entity_decode($this->vipusername);
 			$this->vippassword = html_entity_decode($this->vippassword);
 
-			add_action( 'woocommerce_update_options_shipping_smart_send', array( $this, 'process_admin_options' ) );
-
-			// Check for upgrades
-			if ( self::$ssVersion > get_option('smart_send_updates'))
+			// Check for upgrades - smart_send_updates option returns the previous version
+			$SSprev = get_option('smart_send_updates');
+			if ( self::$ssVersion > $SSprev || empty($SSprev))
 			{
 				$this->_smartSendOnInstallUpgrade();
 				update_option('smart_send_updates', self::$ssVersion );
@@ -52,18 +50,16 @@ function woocommerce_smart_send_shipping_init()
 
 		}
 
-		protected function _setCountry() {
+/*		protected function _setCountry() {
 			$mySettings                 = get_option( $this->plugin_id . $this->id . '_settings', null );
 			$mySettings['availability'] = 'all';
 
 			update_option( $this->plugin_id . $this->id . '_settings', $mySettings );
-		}
+		}*/
 
 		// Set the destination town and postcode to use. If not Australia, disable the plugin
 		protected function _setDestinationVars( $postArray ) {
 			smart_send_debug_log( 'setdestinationvars', $postArray );
-			// if( is_admin() ) return;
-			global $woocommerce;
 
 			$this->_shipToCountry = 'AU';
 
@@ -91,6 +87,7 @@ function woocommerce_smart_send_shipping_init()
 				$this->_shipToTown     = $postData[ $postPrefix . '_city' ];
 				$this->_shipToState    = $postData[ $postPrefix . '_state' ];
 			} else {
+				global $woocommerce;
 				$this->_shipToCountry  = $woocommerce->customer->get_shipping_country();
 				$this->_shipToState    = $woocommerce->customer->get_shipping_state();
 				$this->_shipToPostcode = $woocommerce->customer->get_shipping_postcode();
@@ -270,8 +267,6 @@ function woocommerce_smart_send_shipping_init()
 
 		public function calculate_shipping( $package ) {
 
-			smart_send_debug_log( 'calcshipping', $_POST );
-
 			$this->_setDestinationVars( $_POST );
 
 			$smartSendQuote = new smartSendUtils( $this->vipusername, $this->vippassword );
@@ -437,7 +432,13 @@ function woocommerce_smart_send_shipping_init()
 				foreach ( $itemList as $item )
 					$smartSendQuote->addItem( $item );
 
-				$quoteResult = $smartSendQuote->getQuote();
+				// Check/set OWN transient
+				if (!$quoteResult = $this->_selfTransient($smartSendQuote))
+				{
+					$quoteResult = $smartSendQuote->getQuote();
+					$this->_selfTransient($smartSendQuote, $quoteResult);
+				}
+
 
 				if ( $quoteResult->ObtainQuoteResult->StatusCode != 0 && empty( $quoteResult->ObtainQuoteResult->Quotes->Quote ) ) {
 					$returnError = $quoteResult->ObtainQuoteResult->StatusMessages->string;
@@ -452,9 +453,10 @@ function woocommerce_smart_send_shipping_init()
 
 				$useQuotes = array();
 
-				if ( ! @is_array( $quotes ) )
+				if ( !empty($quotes) && !is_array( $quotes ) )
 					$useQuotes[0] = $quotes;
-				else $useQuotes = $quotes;
+				else
+					$useQuotes = $quotes;
 
 				$quotes = array();
 
@@ -465,6 +467,7 @@ function woocommerce_smart_send_shipping_init()
 				else
 					$quotes = $useQuotes;
 
+				// We need to cache based on params, so we set rates keys with some that change
 				$r = 0;
 				foreach ( $quotes as $quote ) {
 					if ( empty( $quote->TotalPrice ) )
@@ -487,6 +490,45 @@ function woocommerce_smart_send_shipping_init()
 				}
 
 			}
+			SSSdmFlip(0); // Turn off shipping debugging if we had altered it
+		}
+
+		/**
+		 * @param      $qObj  - seed genesis
+		 * @param null $quote - quote data
+		 *
+		 * @return bool
+		 */
+		protected function _selfTransient($qObj, $quote = false)
+		{
+			// Create a hash key from unique data
+			$seeds = array(
+				$qObj->postcodeFrom,
+			    $qObj->suburbFrom,
+			    $qObj->stateFrom,
+			    $qObj->suburbTo,
+			    $qObj->stateTo,
+			    $qObj->quoteItems,
+			    $qObj->promoCode,
+			    $qObj->transportAssurance,
+			    $qObj->userType,
+			    $qObj->taiLLift,
+			    $qObj->promotionalCode,
+			    $qObj->onlineSellerId,
+			    $qObj->receiptedDelivery
+			);
+			$hashKey = 'ss_quote_'.md5(json_encode($seeds));
+
+			if ($quote)
+			{
+				set_transient($hashKey, $quote, 1200);
+				return;
+			}
+
+			if ( !( $return = get_transient($hashKey)))
+				return false;
+			else
+				return $return;
 		}
 
 		/**
@@ -562,3 +604,31 @@ function smartsend_add_frontend_scripts() {
 }
 
 add_action('wp_enqueue_scripts', 'smartsend_add_frontend_scripts');
+
+
+/**
+ * Set shipping debug mode on/off - default is switch off
+ * If it was already on, don't touch it
+ *
+ * @param int $state - The state we want it to be
+ */
+function SSSdmFlip($state = 1)
+{
+	$status_options = get_option( 'woocommerce_status_options', array() );
+
+	// Switch it off if needs be
+	if ( $state === 0 && !empty($status_options['sdm_tmp']) )
+	{
+		unset( $status_options['sdm_tmp'] );
+		unset( $status_options['shipping_debug_mode']);
+	}
+	elseif ( empty($status_options['shipping_debug_mode']) )
+	{
+		$status_options['sdm_tmp'] = '1'; // Reminder to switch it off again, later
+		$status_options['shipping_debug_mode'] = '1';
+	}
+
+	update_option('woocommerce_status_options', $status_options);
+}
+
+add_action( 'woocommerce_before_calculate_totals', 'SSSdmFlip' );

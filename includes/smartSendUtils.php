@@ -424,6 +424,12 @@ class smartSendUtils
 		}
 		return false;
 	}
+
+	public function __get($k)
+	{
+		if (isset($this->$k))
+			return $this->$k;
+	}
 }
 
 function smart_send_debug_log( $file, $data )

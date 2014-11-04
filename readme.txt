@@ -41,6 +41,11 @@ Upgrade through dashboard for added control over results users see and bug fixes
 
 == Changelog ==
 
+= 1.4.7 =
+
+ - Finer-grained cache control to allow for variations missed by WooCommerce transient storage
+ - Magic getter in utils class
+
 = 1.4.6 =
 
  - Use compatible shipping tax rate ID if available
