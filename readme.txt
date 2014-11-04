@@ -4,7 +4,7 @@ Donate link: http://codexmedia.com.au/donations
 Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPLv2
 
 The WooCommerce Smart Send shipping plugin integrates Australian shipping cost calculations for 'Smart Send' online shipping.
