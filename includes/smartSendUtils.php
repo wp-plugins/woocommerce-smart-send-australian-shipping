@@ -98,7 +98,7 @@ class smartSendUtils
 	// Object containing the results of last quote
 	private $lastQuoteResults;
 
-	public static $_debug = false;
+	public static $SSdebug = false;
 
 	/**
 	 * Initialise the Smart Send SOAP API
@@ -434,6 +434,6 @@ class smartSendUtils
 
 function smart_send_debug_log( $file, $data )
 {
-	if (smartSendUtils::$_debug)
+	if (smartSendUtils::$SSdebug)
 		error_log( date( "Y-m-d H:i:s" ) . " - $_SERVER[REMOTE_ADDR]\n" . print_r( $data, true ), 3, dirname( __FILE__ ) . '/../log-'.$file.'.log' );
 }
