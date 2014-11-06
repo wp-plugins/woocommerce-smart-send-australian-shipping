@@ -11,7 +11,7 @@ function woocommerce_smart_send_shipping_init()
 
 		// Minimum weight at which tail-lift assistance is triggered
 		public static $tailMin = 30;
-		private static $ssVersion = 147;
+		private static $ssVersion = 148;
 
 		function __construct() {
 			$this->id                 = 'smart_send';
@@ -348,7 +348,9 @@ function woocommerce_smart_send_shipping_init()
 						if ( count( $shipping_errors ) > 1 )
 							$errString .= 's';
 						$errString .= ':</b><br/><ul><li>' . implode( $shipping_errors, "</li>\n<li>" ) . '</ul>';
-						wc_add_notice( __( $errString, 'WC_Smart_Send' ), 'error' );
+
+						if (current_user_can( 'manage_options' ))
+							wc_add_notice( __( $errString, 'WC_Smart_Send' ), 'error' );
 
 						return;
 					}
@@ -444,7 +446,9 @@ function woocommerce_smart_send_shipping_init()
 					$returnError = $quoteResult->ObtainQuoteResult->StatusMessages->string;
 					if ( is_array( $returnError ) )
 						$returnError = implode( ", ", $returnError );
-					wc_add_notice( __( 'Shipping calculation error: ' . $returnError, 'WC_Smart_Send' ), 'error' );
+
+					if (current_user_can( 'manage_options' ))
+						wc_add_notice( __( 'Shipping calculation error: ' . $returnError, 'WC_Smart_Send' ), 'error' );
 
 					return;
 				}
