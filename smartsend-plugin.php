@@ -11,7 +11,7 @@ function woocommerce_smart_send_shipping_init()
 
 		// Minimum weight at which tail-lift assistance is triggered
 		public static $tailMin = 30;
-		private static $ssVersion = 148;
+		private static $ssVersion = 149;
 
 		function __construct() {
 			$this->id                 = 'smart_send';
@@ -50,51 +50,50 @@ function woocommerce_smart_send_shipping_init()
 
 		}
 
-/*		protected function _setCountry() {
-			$mySettings                 = get_option( $this->plugin_id . $this->id . '_settings', null );
-			$mySettings['availability'] = 'all';
-
-			update_option( $this->plugin_id . $this->id . '_settings', $mySettings );
-		}*/
-
 		// Set the destination town and postcode to use. If not Australia, disable the plugin
 		protected function _setDestinationVars( $postArray ) {
 			smart_send_debug_log( 'setdestinationvars', $postArray );
 
 			$this->_shipToCountry = 'AU';
 
-			if( !empty($postArray['state']))
-			{
+			// Use post vars that start with 's_' first
+			if ( !empty( $postArray['s_state'] ) ) {
+				$this->_shipToState    = $postArray['s_state'];
+				$this->_shipToPostcode = $postArray['s_postcode'];
+				$this->_shipToTown     = $postArray['s_city'];
+			}
+			elseif ( !empty( $postArray['state'] ) ) {
 				$this->_shipToTown     = $postArray['city'];
 				$this->_shipToState    = $postArray['state'];
 				$this->_shipToPostcode = $postArray['postcode'];
 			}
-			else if ( isset( $postArray['calc_shipping'] ) && $postArray['calc_shipping'] == 1 ) {
+			elseif ( isset( $postArray['calc_shipping'] ) && $postArray['calc_shipping'] == 1 ) {
 				$this->_shipToState    = $postArray['calc_shipping_state'];
 				$this->_shipToPostcode = $postArray['calc_shipping_postcode'];
-			} else if ( isset( $_POST['post_data'] ) ) {
+			}
+			elseif ( isset( $_POST['post_data'] ) ) {
 				$postDataString = urldecode( $postArray['post_data'] );
 				foreach ( explode( '&', $postDataString ) as $var ) {
 					list( $k, $v ) = explode( '=', $var );
 					$postData[ $k ] = $v;
 				}
-				if ( isset($postData['shiptobilling']) && $postData['shiptobilling'] == 1 )
+				if ( isset( $postData['shiptobilling'] ) && $postData['shiptobilling'] == 1 ) {
 					$postPrefix = 'billing';
-				else
+				} else {
 					$postPrefix = 'shipping';
+				}
 
 				$this->_shipToPostcode = $postData[ $postPrefix . '_postcode' ];
 				$this->_shipToTown     = $postData[ $postPrefix . '_city' ];
 				$this->_shipToState    = $postData[ $postPrefix . '_state' ];
-			} else {
+			}
+			else {
 				global $woocommerce;
 				$this->_shipToCountry  = $woocommerce->customer->get_shipping_country();
 				$this->_shipToState    = $woocommerce->customer->get_shipping_state();
 				$this->_shipToPostcode = $woocommerce->customer->get_shipping_postcode();
 				$this->_shipToTown     = $woocommerce->customer->get_shipping_city();
 			}
-
-			$blah = $this->_shipToCountry;
 		}
 
 		public function init_form_fields() {
