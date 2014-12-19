@@ -183,7 +183,7 @@ function woocommerce_smart_send_checkout_js()
 					$("#"+cartSide+"_city").autocomplete( {
 						"source": suburbs[pcode],
 						"minLength": 0,
-						select: function(event, ui) {
+						change: function(event, ui) {
 							$("body").trigger("update_checkout");
 						}
 					});

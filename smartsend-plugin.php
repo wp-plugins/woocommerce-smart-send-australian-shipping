@@ -62,6 +62,13 @@ function woocommerce_smart_send_shipping_init()
 				$this->_shipToPostcode = $postArray['s_postcode'];
 				$this->_shipToTown     = $postArray['s_city'];
 			}
+			// If the s_state etc isn't populated, check for ship to different address flag and use shipping listed
+			elseif ( !empty($postArray['ship_to_different_address']) && $postArray['ship_to_different_address'] == 1 )
+			{
+				$this->_shipToState    = $postArray['shipping_state'];
+				$this->_shipToPostcode = $postArray['shipping_postcode'];
+				$this->_shipToTown     = $postArray['shipping_city'];
+			}
 			elseif ( !empty( $postArray['state'] ) ) {
 				$this->_shipToTown     = $postArray['city'];
 				$this->_shipToState    = $postArray['state'];
