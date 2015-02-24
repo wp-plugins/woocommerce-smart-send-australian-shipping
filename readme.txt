@@ -1,10 +1,9 @@
-=== WooCommerce Smart Send Shipping ===
-Contributors: sp4cecat
-Donate link: http://codexmedia.com.au/donations
-Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax
+=== Smart Send Shipping for WooCommerce ===
+Contributors: sp4cecat, goSmartSend
+Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax, courier
 Requires at least: 3.5
-Tested up to: 4.1
-Stable tag: 1.4.10
+Tested up to: 4.1.1
+Stable tag: 2.0
 License: GPLv2
 
 The WooCommerce Smart Send shipping plugin integrates Australian shipping cost calculations for 'Smart Send' online shipping.
@@ -13,7 +12,9 @@ The WooCommerce Smart Send shipping plugin integrates Australian shipping cost c
 
 Seamlessly integrate shipping for your Australian business with WooCommerce and the Smart Send shipping plugin.
 
-Allows customers to get an accurate quote for shipping before checking out, simply by entering some basic address info, as well as offering multiple shipping price point options, receipted delivery, transport assurance, tail-lift options AND the ability to set handlng fees; flat rate or percentage.
+Allows customers to get an accurate quote for shipping before checking out, simply by entering some basic address info, as well as offering multiple shipping price point options, receipted delivery, transport assurance, tail-lift options AND the ability to set handling fees; flat rate or percentage.
+
+Merchant can fulfill shipping directly from within the WooCommerce 'orders' section of the dashboard, specifying pickup date.
 
 For more information visit [http://codexmedia.com.au/woocommerce-smart-send-shipping-plugin/](http://codexmedia.com.au/woocommerce-smart-send-shipping-plugin/ "http://codexmedia.com.au/woocommerce-smart-send-shipping-plugin/")
 
@@ -41,14 +42,25 @@ Upgrade through dashboard for added control over results users see and bug fixes
 
 == Changelog ==
 
-= 1.4.10 =
+= 2.0 =
 
- - Works with WordPress 4.1
- - Better checkout updating
+Major update
+
+New Features:
+
+ - Shipping fulfilment from within dashboard
+ - Shipment tracking from within dashboard
+ - Complete restructuring of SDK classes / API interface
+ - Intelligent caching of orders and quotes for use in booking orders
+ - Adds 'cost' field to products, for accurate transport assurance calculations
+
+Bug fixes:
+
+ - Better delivery address parsing
 
 = 1.4.9 =
 
- - Shipping address in calculations
+ - Allow for extra delivery address post fields on quote calculations
 
 = 1.4.8 =
 

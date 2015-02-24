@@ -1,15 +1,34 @@
 <?php
 /*
-	Plugin Name: Woo Commerce - Smart Send Shipping Plugin
-	Plugin URI: http://codexmedia.com.au/woocommerce-smart-send-shipping-plugin/
-	Description: Add Smart Send shipping calculations to Woo Commerce e-commerce plugin
-	Version: 1.4.10
+	Plugin Name: Smart Send Shipping for WooCommerce
+	Plugin URI: http://digital.smartsend.com.au/plugins/woocommerce
+	Description: Add Smart Send Australian shipping calculations to Woo Commerce.
+	Version: 2.0
+	Author:  Smart Send
 	Author:  Paul Appleyard
-	Author URI: http://codexmedia.com.au/
+	Author URI: http://digital.smartsend.com.au/plugins/woocommerce-shipping-plugin
 	License: GPL v2 - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 
+// Paths
 
-require_once( 'includes/smartSendUtils.php' );
+define( 'SSBASE', dirname( __FILE__ ) . '/' );
+define( 'SSCACHE', SSBASE . 'cache/' );
+define( 'SSINC', SSBASE . 'includes/' );
+define( 'SSASSETS', SSBASE . 'assets/' );
+define( 'SSLOGS', SSBASE . 'logs/' );
+define( 'SSLABELS', SSBASE . 'labels/' );
+
+// SDK classes
+foreach (glob(dirname(__FILE__)."/sdk/*.php") as $filename)
+{
+	include $filename;
+}
+
 require_once('smartsend-plugin.php');
-require_once('includes/smartsend-checkout.php');
+
+// Plugin includes
+foreach (glob(dirname(__FILE__)."/includes/*.php") as $filename)
+{
+	include $filename;
+}
