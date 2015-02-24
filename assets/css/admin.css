@@ -1,0 +1,72 @@
+.order_actions .ss_button {
+    background: url('../media/s-icon-purple.png') 2px 2px no-repeat;
+    padding-left: 26px !important;
+    line-height: 18px;
+    overflow: hidden;
+}
+
+.order_actions .ss_button:hover {
+    background: url('../media/s-icon-green.png') 2px 2px no-repeat;
+}
+
+.order_actions .ss_ship {
+    width: 57px;
+    clear: left;
+}
+
+.order_actions .ss_shipped {
+    width: 86px;
+}
+
+.order_actions .ss_pending {
+    background: gray;
+    color: white;
+}
+
+div.ss_notice {
+    background: rgba( 91, 49, 107, 0.5);
+    color: white !important;
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 10px !important;
+    display: inline-block;
+}
+
+div.ss_small {
+    border-radius: 3px;
+    font-size: 0.7rem;
+    color: rgba( 91, 49, 107, 1);
+    display: inline-block;
+    clear: left;
+    font-style: italic;
+}
+
+.button.ssbuttonstyle {
+    background: rgba( 91, 49, 107, 1);
+    color: white;
+    font-weight: bold;
+}
+
+.button.ssbuttonstyle:hover, a.button.ssbuttonstyle:active, a.button.ssbuttonstyle:visited, a.button.ssbuttonstyle:focus {
+    background: rgba( 91, 49, 107, 1);
+    color: rgba( 255, 255, 255, 0.6);
+}
+
+input.shipdate {
+    background: rgba( 91, 49, 107, 1);
+    color: rgba( 255, 255, 255, 0.8);
+    width: 80px;
+    font-size: 0.8rem;
+}
+
+.shipping-date {
+    padding: 5px;
+    background: rgba( 91, 49, 107, .4);
+    border-radius: 3px;
+    font-size: .9rem;
+    font-weight: bold;
+    color: black;
+    margin-top: 5px;
+    display: none;
+    clear: both;
+}
