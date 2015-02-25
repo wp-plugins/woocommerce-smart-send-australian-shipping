@@ -3,7 +3,7 @@
 	Plugin Name: Smart Send Shipping for WooCommerce
 	Plugin URI: http://digital.smartsend.com.au/plugins/woocommerce
 	Description: Add Smart Send Australian shipping calculations to Woo Commerce.
-	Version: 2.0
+	Version: 2.0.1
 	Author:  Smart Send
 	Author:  Paul Appleyard
 	Author URI: http://digital.smartsend.com.au/plugins/woocommerce-shipping-plugin
