@@ -742,9 +742,11 @@ class smartSendAPI
 }
 
 // Deprecated
-function smart_send_debug_log( $file, $data )
-{
-    smartSendAPI::debugLog( $file, $data );
+if (!function_exists('smart_send_debug_log')) {
+    function smart_send_debug_log( $file, $data )
+    {
+        smartSendAPI::debugLog( $file, $data );
+    }
 }
 
 /**

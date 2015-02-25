@@ -264,14 +264,14 @@ function woocommerce_smart_send_shipping_init()
 					'class'       => 'chosen-select',
 					'desc_tip'    => true
 				),
-				'ship_delay'   => array(
+/*				'ship_delay'   => array(
 					'title'    => __( 'Shipping Delay', 'woocommerce' ),
 					'type'     => 'text',
 					'css'      => 'width: 50px',
 					'default'     => '0',
 					'description' => __( "Number of days until shipping ordered. '0' for ASAP." ),
 					'desc_tip' => true
-				),
+				),*/
 				'type'              => array(
 					'title'       => __( 'Package Type', 'woocommerce' ),
 					'type'        => 'select',
