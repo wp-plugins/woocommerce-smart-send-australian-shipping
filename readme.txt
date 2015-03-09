@@ -3,7 +3,7 @@ Contributors: sp4cecat, goSmartSend
 Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax, courier
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 2.0
+Stable tag: 2.0.2
 License: GPLv2
 
 The WooCommerce Smart Send shipping plugin integrates Australian shipping cost calculations for 'Smart Send' online shipping.
@@ -41,6 +41,14 @@ Support is available at the [Codex Media website](http://codexmedia.com.au/suppo
 Upgrade through dashboard for added control over results users see and bug fixes.
 
 == Changelog ==
+
+= 2.0.2 =
+
+ - Check that WooCommerce is installed before running
+
+= 2.0.1 =
+
+ - Added upgrade notice
 
 = 2.0 =
 
@@ -186,3 +194,8 @@ There can be multiple towns within a postcode, and this detail can make a differ
 
 1. Admin settings screen
 2. Checkout page with additional user options
+
+== Upgrade Notice ==
+
+= 2.0.1 =
+2.0 represents a major update for the Smart Send WooCommerce plugin, so if you are upgrading to 2.x from a 1.x version, please review the extra options that must be set under WooCommerce->settings->shipping->Smart Send

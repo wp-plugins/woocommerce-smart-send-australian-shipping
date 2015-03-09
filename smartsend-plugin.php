@@ -17,7 +17,7 @@ function woocommerce_smart_send_shipping_init()
 
 		// Minimum weight at which tail-lift assistance is triggered
 		public static $tailMin = 30;
-		private static $ssVersion = 1500;
+		private static $ssVersion = 2002;
 
 		function __construct() {
 			$this->id                 = 'smart_send';

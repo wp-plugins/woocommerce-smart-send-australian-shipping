@@ -160,6 +160,8 @@ class smartSendQuote extends smartSendAPI
 
 	/**
 	 * Cache both params and quote results, index is Price ID
+	 *
+	 *
 	 */
 	protected function _cacheParams()
 	{
