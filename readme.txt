@@ -186,3 +186,8 @@ There can be multiple towns within a postcode, and this detail can make a differ
 
 1. Admin settings screen
 2. Checkout page with additional user options
+
+== Upgrade Notice ==
+
+= 2.0.1 =
+2.0 represents a major update for the Smart Send WooCommerce plugin, so if you are upgrading to 2.x from a 1.x version, please review the extra options that must be set under WooCommerce->settings->shipping->Smart Send
