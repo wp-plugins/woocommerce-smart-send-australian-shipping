@@ -15,9 +15,11 @@ function woocommerce_smart_send_shipping_init()
 		protected $_rememberTheError;
 		protected $_rememberTheErrorType;
 
+		protected $_postData = array();
+
 		// Minimum weight at which tail-lift assistance is triggered
 		public static $tailMin = 30;
-		private static $ssVersion = 2002;
+		private static $ssVersion = 2100;
 
 		function __construct() {
 			$this->id                 = 'smart_send';
@@ -105,6 +107,7 @@ function woocommerce_smart_send_shipping_init()
 				foreach ( explode( '&', $postDataString ) as $var ) {
 					list( $k, $v ) = explode( '=', $var );
 					$postData[ $k ] = $v;
+					$this->_postData[$k] = $v;
 				}
 				if ( isset( $postData['shiptobilling'] ) && $postData['shiptobilling'] == 1 ) {
 					$postPrefix = 'billing';
@@ -130,142 +133,148 @@ function woocommerce_smart_send_shipping_init()
 
 				'enabled'           => array(
 					'type'    => 'checkbox',
-					'label'   => __( ' Enable Smart Send shipping', 'woocommerce' ),
+					'label'   => __( ' Enable Smart Send shipping', 'smartsend-woo' ),
 					'default' => 'no',
 				),
 				'denoted'           => array(
-					'title'       => __( 'Method Title', 'woocommerce' ),
+					'title'       => __( 'Method Title', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( ' Displayed next to each shipping option/price point.', 'woocommerce' ),
-					'default'     => __( 'Courier', 'woocommerce' ),
+					'description' => __( ' Displayed next to each shipping option/price point.', 'smartsend-woo' ),
+					'default'     => __( 'Courier', 'smartsend-woo', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'vipusername'       => array(
-					'title'       => __( 'VIP Username', 'woocommerce' ),
+					'title'       => __( 'VIP Username', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( ' VIP username issued by Smart Send' ),
+					'description' => __( ' VIP username issued by Smart Send', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'vippassword'       => array(
-					'title'       => __( 'VIP Password', 'woocommerce' ),
+					'title'       => __( 'VIP Password', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( ' VIP password issued by Smart Send' ),
+					'description' => __( ' VIP password issued by Smart Send', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'show_results'      => array(
-					'title'       => __( 'Display Results', 'woocommerce' ),
+					'title'       => __( 'Display Results', 'smartsend-woo' ),
 					'type'        => 'select',
-					'description' => __( ' Select which shipping solutions to display.' ),
+					'description' => __( ' Select which shipping solutions to display.', 'smartsend-woo' ),
 					'default'     => 'all',
 					'options'     => array(
-						'all'   => __( 'Show All Results', 'woocommerce' ),
-						'cheap' => __( 'Show Only Cheapest', 'woocommerce' ),
-						'fast'  => __( 'Show Only Fastest', 'woocommerce' )
+						'all'   => __( 'Show All Results', 'smartsend-woo' ),
+						'cheap' => __( 'Show Only Cheapest', 'smartsend-woo' ),
+						'fast'  => __( 'Show Only Fastest', 'smartsend-woo' )
 					),
 					'class'       => 'chosen-select',
 					'desc_tip'    => true
 				),
 				'weights'           => array(
-					'title'       => __( 'Weight Units', 'woocommerce' ),
+					'title'       => __( 'Weight Units', 'smartsend-woo' ),
 					'type'        => 'select',
 					'default'     => 'kg',
-					'description' => __( ' Weight unit products are measured in.' ),
+					'description' => __( ' Weight unit products are measured in.', 'smartsend-woo' ),
 					'options'     => array(
-						'kg' => __( 'Kilograms', 'woocommerce' ),
-						'g'  => __( 'Grams', 'woocommerce' )
+						'kg' => __( 'Kilograms', 'smartsend-woo' ),
+						'g'  => __( 'Grams', 'smartsend-woo' )
 					),
 					'class'       => 'chosen-select',
 					'desc_tip'    => true
 				),
 				'usetestserver'     => array(
 					'type'        => 'checkbox',
-					'label'       => __( ' Force use of test API', 'woocommerce' ),
+					'label'       => __( ' Force use of test API', 'smartsend-woo' ),
 					'default'     => 'no',
-					'description' => __( "Force plugin to use the test API server. Will use this anyway if the username starts with 'test@'" ),
+					'description' => __( "Force plugin to use the test API server. Will use this anyway if the username starts with 'test@'", 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'pickupdetails'     => array(
-					'title'       => __( 'Company Details', 'woocommerce' ),
+					'title'       => __( 'Company Details', 'smartsend-woo' ),
 					'type'        => 'title',
 					'default'     => '',
-					'description' => __( 'Where shipping will be collected' ),
+					'description' => __( 'Where shipping will be collected', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'companyname'       => array(
-					'title'       => __( 'Company Name', 'woocommerce' ),
+					'title'       => __( 'Company Name', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( 'Required if the merchant is a company.' )
+					'description' => __( 'Required if the merchant is a company. Maximum 30 characters.', 'smartsend-woo' )
 				),/*
 				'couriermessage'        => array(
-					'title'       => __( 'Message for Courier', 'woocommerce' ),
+					'title'       => __( 'Message for Courier', 'smartsend-woo' ),
 					'type'        => 'text',
-					'placeholder' => __( 'Optional courier notes', 'woocommerce' ),
+					'placeholder' => __( 'Optional courier notes', 'smartsend-woo' ),
 					'custom_attributes' => array( 'maxlength' => '24', 'title' => 'Message cannot be longer than 24 characters' ),
 					'description' => __( ' Enter a standard note for pickups - eg, "Not at home, please collect package from rear door"' )
 				),*/
 				'merchantcontact'   => array(
-					'title'       => __( 'Contact', 'woocommerce' ),
+					'title'       => __( 'Contact', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( 'Full name of the person to contact' ),
+					'description' => __( 'Full name of the person to contact. Maximum 30 characters.', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'merchantphone'     => array(
-					'title'             => __( 'Contact Phone', 'woocommerce' ),
+					'title'             => __( 'Contact Phone', 'smartsend-woo' ),
 					'type'              => 'text',
 					'description'       => __( 'A phone number for the contact person, must be 10 digits only' ),
 					'custom_attributes' => array( 'pattern' => '\d{10}', 'title' => 'Phone must be exactly 10 digits' ),
 					'desc_tip'          => true
 				),
 				'merchantemail'     => array(
-					'title'             => __( 'Contact Email', 'woocommerce' ),
+					'title'             => __( 'Contact Email', 'smartsend-woo' ),
 					'type'              => 'email',
 					'description'       => __( 'The email address for the contact' ),
-					'custom_attributes' => array( 'title' => 'Phone must be exactly 10 digits' ),
+					'custom_attributes' => array( 'title' => 'Phone must be exactly 10 digits', 'smartsend-woo' ),
 					'desc_tip'          => true
 				),
 				'originaddress'     => array(
-					'title'       => __( 'Origin Address', 'woocommerce' ),
+					'title'       => __( 'Origin Address', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( 'Street address goods are shipped from' ),
+					'description' => __( 'Street address goods are shipped from. Maximum 30 characters.', 'smartsend-woo' ),
+					'desc_tip'    => true
+				),
+				'originaddress2'     => array(
+					'title'       => __( 'Origin Address 2', 'smartsend-woo' ),
+					'type'        => 'text',
+					'description' => __( 'Optional second address, can also be used for courier messages. Maximum 30 characters.', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'origintown'        => array(
-					'title'       => __( 'Origin Town', 'woocommerce' ),
+					'title'       => __( 'Origin Town', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( ' The town goods are shipped from' ),
+					'description' => __( ' The town goods are shipped from', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'originpostcode'    => array(
-					'title'       => __( 'Origin Postcode', 'woocommerce' ),
+					'title'       => __( 'Origin Postcode', 'smartsend-woo' ),
 					'type'        => 'text',
 					'css'         => 'width: 50px',
-					'description' => __( 'The postcode goods are shipped from' ),
+					'description' => __( 'The postcode goods are shipped from. Must be 4 digits.', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'autofulfill'       => array(
-					'title'       => __( 'Auto-fulfilment', 'woocommerce' ),
-					'enabled'     => __( 'Enable/Disable', 'woocommerce' ),
+					'title'       => __( 'Auto-fulfilment', 'smartsend-woo' ),
+					'enabled'     => __( 'Enable/Disable', 'smartsend-woo' ),
 					'type'        => 'checkbox',
-					'label'       => __( ' Enable auto-fulfilment', 'woocommerce' ),
+					'label'       => __( ' Enable auto-fulfilment', 'smartsend-woo' ),
 					'default'     => 'no',
-					'description' => __( 'Order shipping after successful checkout by customer' ),
+					'description' => __( 'Order shipping after successful checkout by customer', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'pickuptime'        => array(
-					'title'       => __( 'Pickup Window', 'woocommerce' ),
+					'title'       => __( 'Pickup Window', 'smartsend-woo' ),
 					'type'        => 'select',
 					'default'     => 'between 12pm - 4pm',
-					'description' => __( 'The time you would like the courier to pick up items' ),
+					'description' => __( 'The time you would like the courier to pick up items', 'smartsend-woo' ),
 					'options'     => array(
-						'between 12pm - 4pm'                                 => __( 'Between 12pm and 4pm', 'woocommerce' ),
-						'between 1pm - 5pm'                                  => __( 'Between 1pm and 5pm', 'woocommerce' ),
-						'Within 30 minutes of Booking during business hours' => __( 'Within 30 minutes of Booking during business hours', 'woocommerce' )
+						'Between 12pm - 4pm'                                 => __( 'Between 12pm and 4pm', 'smartsend-woo' ),
+						'Between 1pm - 5pm'                                  => __( 'Between 1pm and 5pm', 'smartsend-woo' ),
+						'Within 30 minutes of Booking during business hours' => __( 'Within 30 minutes of Booking during business hours', 'smartsend-woo' )
 					),
 					'class'       => 'chosen-select',
 					'desc_tip'    => true
 				),
 /*				'ship_delay'   => array(
-					'title'    => __( 'Shipping Delay', 'woocommerce' ),
+					'title'    => __( 'Shipping Delay', 'smartsend-woo' ),
 					'type'     => 'text',
 					'css'      => 'width: 50px',
 					'default'     => '0',
@@ -273,7 +282,7 @@ function woocommerce_smart_send_shipping_init()
 					'desc_tip' => true
 				),*/
 				'type'              => array(
-					'title'       => __( 'Package Type', 'woocommerce' ),
+					'title'       => __( 'Package Type', 'smartsend-woo' ),
 					'type'        => 'select',
 					'description' => 'Default shipping class, unless specified in product',
 					'default'     => 'Carton',
@@ -281,84 +290,90 @@ function woocommerce_smart_send_shipping_init()
 					'desc_tip'    => true
 				),
 				'handling_type'     => array(
-					'title'       => __( 'Add handling fee?', 'woocommerce' ),
+					'title'       => __( 'Add handling fee?', 'smartsend-woo' ),
 					'type'        => 'select',
 					'description' => __( ' Add a handling fee as a percentage of the cart total, or a flat rate' ),
 					'default'     => 'none',
 					'class'       => 'ss-handling-type chosen-select',
 					'options'     => array(
-						'none'    => __( 'No', 'woocommerce' ),
-						'percent' => __( 'Percentage', 'woocommerce' ),
-						'flat'    => __( 'Flat Rate', 'woocommerce' )
+						'none'    => __( 'No', 'smartsend-woo' ),
+						'percent' => __( 'Percentage', 'smartsend-woo' ),
+						'flat'    => __( 'Flat Rate', 'smartsend-woo' )
 					),
 					'desc_tip'    => true
 				),
 				'handling_amount'   => array(
-					'title'    => __( 'Handling Amount', 'woocommerce' ),
+					'title'    => __( 'Handling Amount', 'smartsend-woo' ),
 					'type'     => 'text',
 					'css'      => 'width: 50px',
 					'desc_tip' => true
 				),
 				'assurance'         => array(
-					'title'       => __( 'Transport Assurance', 'woocommerce' ),
+					'title'       => __( 'Transport Assurance', 'smartsend-woo' ),
 					'type'        => 'select',
-					'description' => __( ' No, always or user-optional' ),
+					'description' => __( ' No, always or user-optional', 'smartsend-woo' ),
 					'default'     => 'none',
 					'class'       => 'ss-assurance chosen-select',
 					'options'     => array(
-						'none'     => __( 'No', 'woocommerce' ),
-						'forced'   => __( 'Always', 'woocommerce' ),
-						'optional' => __( 'Optional', 'woocommerce' )
+						'none'     => __( 'No', 'smartsend-woo' ),
+						'forced'   => __( 'Always', 'smartsend-woo' ),
+						'optional' => __( 'Optional', 'smartsend-woo' )
 					),
 					'desc_tip'    => true
 				),
 				'assurance_minimum' => array(
-					'title'       => __( 'Assurance Min.', 'woocommerce' ),
+					'title'       => __( 'Assurance Min.', 'smartsend-woo' ),
 					'type'        => 'text',
-					'description' => __( ' Only apply to cart totals over this amount.' ),
+					'description' => __( ' Only apply to cart totals over this amount.', 'smartsend-woo' ),
 					'css'         => 'width: 50px',
 					'desc_tip'    => true
 				),
 				'tail_pickup'       => array(
-					'title'       => __( 'Tail-lift - pickup', 'woocommerce' ),
+					'title'       => __( 'Tail-lift - pickup', 'smartsend-woo' ),
 					'type'        => 'text',
 					'default'     => 0,
-					'description' => __( ' KG - set to zero for none' ),
+					'description' => __( ' KG - set to zero for none', 'smartsend-woo' ),
 					'css'         => 'width: 50px',
 					'desc_tip'    => true
 				),
 				'recipienttitle'    => array(
-					'title'       => __( 'Recipient Related', 'woocommerce' ),
+					'title'       => __( 'Recipient Related', 'smartsend-woo' ),
 					'type'        => 'title',
 					'default'     => '',
-					'description' => __( 'Options that affect the recipient' ),
+					'description' => __( 'Options that affect the recipient', 'smartsend-woo' ),
 					'desc_tip'    => true
 				),
 				'receipted'         => array(
-					'title'       => __( 'Receipted Delivery', 'woocommerce' ),
+					'title'       => __( 'Receipted Delivery', 'smartsend-woo' ),
 					'type'        => 'select',
-					'description' => __( 'Specify whether recipient should sign for deliveries. No, always or user-optional. May increase quote prices.' ),
+					'description' => __( 'Specify whether recipient should sign for deliveries. No, always or user-optional. May increase quote prices.', 'smartsend-woo' ),
 					'default'     => 'none',
 					'options'     => array(
-						'none'     => __( 'No', 'woocommerce' ),
-						'forced'   => __( 'Always', 'woocommerce' ),
-						'optional' => __( 'Optional', 'woocommerce' )
+						'none'     => __( 'No', 'smartsend-woo' ),
+						'forced'   => __( 'Always', 'smartsend-woo' ),
+						'optional' => __( 'Optional', 'smartsend-woo' )
 					),
 					'class'       => 'chosen-select',
 					'desc_tip'    => true
 				),
 				'emailrecipient'    => array(
-					'title'    => __( 'Recipient notification', 'woocommerce' ),
+					'title'    => __( 'Recipient notification', 'smartsend-woo' ),
 					'type'     => 'checkbox',
-					'label'    => __( 'Email tracking details to recipient', 'woocommerce' ),
+					'label'    => __( 'Email tracking details to recipient', 'smartsend-woo' ),
 					'default'  => 'no',
 					'desc_tip' => true
 				),
 				'tail_delivery'     => array(
-					'title'       => __( 'Tail-lift (delivery)', 'woocommerce' ),
+					'title'       => __( 'Tail-lift (delivery)', 'smartsend-woo' ),
 					'type'        => 'checkbox',
 					'default'     => 'no',
-					'label'    => __( 'Give buyers the option to request a tail-lift truck deliver the items.', 'woocommerce' )
+					'label'    => __( 'Give buyers the option to request a tail-lift truck deliver the items.', 'smartsend-woo' )
+				),
+				'tail_delivery_enforce' => array(
+					'title'       => __( 'Force Tail-Lift Delivery', 'smartsend-woo' ),
+					'type'        => 'checkbox',
+					'default'     => 'yes',
+					'label'    => __( 'Compulsory tail-lift option for residential deliveries with items over 30kg. This means that if an addressee does NOT have the company name filled in, we will enforce tail-lift delivery.', 'smartsend-woo' )
 				)
 			);
 			foreach ( smartSendQuote::$ssPackageTypes as $type ) {
@@ -401,6 +416,12 @@ function woocommerce_smart_send_shipping_init()
 
 			$smartSendQuote = new smartSendQuote( $this->vipusername, $this->vippassword, $useTest );
 
+			// Make the quote caching more unique
+			if (!WC()->session->get('smart_send_cache_key'))
+				WC()->session->set('smart_send_cache_key', md5(microtime()));
+
+			$smartSendQuote->setAppReference(WC()->session->get('smart_send_cache_key'));
+
 			if ( empty( $this->_shipToTown ) )
 				$this->_shipToTown = $smartSendQuote->getFirstTown( $this->_shipToPostcode );
 
@@ -411,6 +432,7 @@ function woocommerce_smart_send_shipping_init()
 			$cartTotal       = 0;
 			$assuranceTotal  = 0;
 			$tailPickup      = $this->tail_pickup; // Items over this weight will trigger 'tail lift' on pickup
+			$forceTailDelivery = $this->tail_delivery_enforce;
 
 			$cartItems = $package['contents'];
 
@@ -476,8 +498,13 @@ function woocommerce_smart_send_shipping_init()
 						}
 					}
 
+					if ($forceTailDelivery == 'yes' && ($weight+0) > self::$tailMin && ( !isset($_GET['post_data']) || (!empty($_POST['post_data']) && preg_match('/billing_company=&/', $_POST['post_data'])) ))
+					{
+						$deliveryFlag = true;
+					}
+
 					if ( count( $shipping_errors ) ) {
-						$errString = '<b>Shipping calculation error';
+						$errString = '<b>';
 						if ( count( $shipping_errors ) > 1 )
 							$errString .= 's';
 						$errString .= ':</b><br/><ul><li>' . implode( $shipping_errors, "</li>\n<li>" ) . '</ul>';
@@ -541,7 +568,7 @@ function woocommerce_smart_send_shipping_init()
 				if ( $pickupFlag )
 					$tailLift = 'PICKUP';
 
-				if ($sessionTailDelivery == 'yes')
+				if ($sessionTailDelivery == 'yes' || $deliveryFlag == true)
 				{
 					if ( $pickupFlag )
 						$tailLift = 'BOTH';
@@ -722,8 +749,13 @@ function woocommerce_smart_send_shipping_init()
 						)
 					);
 				}
-				// TODO: Manually add new options as defaults
 			}
+			// Check that tail_delivery_enforce is set
+			if ( empty($this->settings['tail_delivery_enforce'])) {
+				$this->settings['tail_delivery_enforce'] = 'yes';
+				update_option('woocommerce_smart_send_settings', $this->settings);
+			}
+
 		}
 
 		/**
@@ -736,6 +768,10 @@ function woocommerce_smart_send_shipping_init()
 		{
 			if (is_page('cart'))
 				return;
+
+			if ($type == 'error' && preg_match( '/is not at postcode/', $str))
+				return;
+
 			// Check if this is by AJAX
 			if (defined('DOING_AJAX') && DOING_AJAX)
 			{
@@ -746,14 +782,20 @@ function woocommerce_smart_send_shipping_init()
 				return;
 			}
 			if (current_user_can( 'manage_options' ))
-				wc_add_notice( __( 'Shipping calculation '.$type.': ' . $str, 'WC_Smart_Send' ), $type );
+				wc_add_notice( __( ucfirst($type).': ' . $str, 'WC_Smart_Send' ), $type );
 		}
 
 		/**
 		 *  If we get an error in AJAX town, invade the HTML returned
 		 */
 		public function oh_no_a_shipping_error() {
-			echo '<div class="woocommerce-'.$this->_rememberTheErrorType.'">Shipping calculation '.$this->_rememberTheErrorType.': ' . $this->_rememberTheError.'</div>';
+			$thisNotice = md5(microtime());
+			?>
+			<div id="special-notice-<?=$thisNotice?>" class="smartsend-added-error woocommerce-error"><?php echo ucfirst($this->_rememberTheErrorType); ?>: <?php echo $this->_rememberTheError; ?></div>
+			<script type="text/javascript">
+				jQuery("#special-notice-<?=$thisNotice?>").show();
+			</script>
+		<?php
 		}
 	}
 }

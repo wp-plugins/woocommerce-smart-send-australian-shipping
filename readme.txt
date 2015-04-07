@@ -3,7 +3,7 @@ Contributors: sp4cecat, goSmartSend
 Tags: australia, calculator, carriers, cart, e-commerce, ecommerce, woocommerce, postage, shipping, shop, tax, courier
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 2.0.2
+Stable tag: 2.1.0
 License: GPLv2
 
 The WooCommerce Smart Send shipping plugin integrates Australian shipping cost calculations for 'Smart Send' online shipping.
@@ -41,6 +41,15 @@ Support is available at the [Codex Media website](http://codexmedia.com.au/suppo
 Upgrade through dashboard for added control over results users see and bug fixes.
 
 == Changelog ==
+
+= 2.1.0 =
+
+ - Better quote caching system integrated
+ - Errors and notices handled better on checkout
+ - Suburb / postcode UI improved on cart shipping estimate
+ - Tail-lift delivery must be enforce for items over 30kg for non-business deliveries
+ - Added second origin street address
+ - Warning on character restrictions on settings screen
 
 = 2.0.2 =
 
@@ -197,5 +206,5 @@ There can be multiple towns within a postcode, and this detail can make a differ
 
 == Upgrade Notice ==
 
-= 2.0.1 =
-2.0 represents a major update for the Smart Send WooCommerce plugin, so if you are upgrading to 2.x from a 1.x version, please review the extra options that must be set under WooCommerce->settings->shipping->Smart Send
+= 2.1.0 =
+Please note that with this version, due to OH&S concerns, we now require tail-lift delivery be selected if a delivery is going to a non-company AND if an item in the shipment is over 30kg. A customer is considered a non-company if the company field is not completed in billing details. This setting can be changed at the bottom of the options screen.

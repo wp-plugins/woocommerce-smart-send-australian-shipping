@@ -159,7 +159,8 @@ class smartSendAPI
      */
     public static $pickupWindows = array(
         'Between 12pm - 4pm',
-        'Between 1pm - 5pm'
+        'Between 1pm - 5pm',
+        'Within 30 minutes of Booking during business hours'
     );
 
     /**
@@ -621,7 +622,8 @@ class smartSendAPI
      */
     protected function _getLabel( $refid )
     {
-        $label    = file_get_contents( $this->_labelServer . '?want=pdf&devcode=' . $this->developerId . '&refid=' . $refid );
+	    // TODO: Suppress is bad
+        $label    = @file_get_contents( $this->_labelServer . '?want=pdf&devcode=' . $this->developerId . '&refid=' . $refid );
         $head     = $http_response_header;
         $fileName = '';
         foreach ($head as $h) {
@@ -741,7 +743,9 @@ class smartSendAPI
     }
 }
 
-// Deprecated
+/**
+ * @deprecated
+ */
 if (!function_exists('smart_send_debug_log')) {
     function smart_send_debug_log( $file, $data )
     {

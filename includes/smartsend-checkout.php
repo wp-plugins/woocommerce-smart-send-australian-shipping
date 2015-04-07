@@ -295,8 +295,25 @@ function smart_send_record_shipping( $order_id )
 			{
 				$PriceID = $bits[1];
 				update_post_meta( $order_id, 'SSpriceID', $PriceID );
+
 				// We need to set shipping status
 				update_post_meta( $order_id, 'SSstatus', 'quoted' ); // quoted, ordered, shipped
+
+				// Finally, cache key
+				$cacheKey = WC()->session->get('smart_send_cache_key');
+				update_post_meta( $order_id, 'SScacheKey', $cacheKey);
+				WC()->session->__unset('smart_send_cache_key');
+
+				foreach( scandir(SSCACHE.'quotes') as $file)
+				{
+					if (preg_match( '/re[qs]_(\d+)_'.$cacheKey.'$/', $file, $bits))
+					{
+						if ($bits[1] == $PriceID)
+							continue;
+						$fullPath = SSCACHE.'quotes/'.$bits[0];
+						unlink($fullPath);
+					}
+				}
 			}
 		}
 	}
@@ -313,6 +330,17 @@ function smart_send_record_shipping( $order_id )
 			}
 		}
 	}
+}
+
+add_action( 'woocommerce_review_order_before_cart_contents', 'hide_smart_send_notices' );
+
+function hide_smart_send_notices()
+{
+	?>
+	<script type="text/javascript">
+		jQuery(".smartsend-added-error").hide();
+	</script>
+	<?php
 }
 
 /**
@@ -343,13 +371,9 @@ function smartSendMoveCalcFields()
 <script type="text/javascript">
 	// Suburbs
 	var suburbs = {<?php echo implode( ', ', $locSimple); ?>};
+	jQuery("#calc_shipping_city").closest("p").css({visibility: 'hidden'});
 
 	jQuery(document).ready(function($) {
-
-		$("#calc_shipping_city").closest("p").hide();
-
-		// Move these fields around
-//		$("#calc_shipping_postcode").insertBefore($("#calc_shipping_city"));
 
 		$("#calc_shipping_postcode").on("keyup", function() {
 
@@ -361,7 +385,7 @@ function smartSendMoveCalcFields()
 					"minLength": 0
 				});
 
-				$("#calc_shipping_city").closest("p").show();
+				$("#calc_shipping_city").closest("p").css({visibility: 'visible'});
 				$("#calc_shipping_city").autocomplete( "search", "");
 			}
 		});

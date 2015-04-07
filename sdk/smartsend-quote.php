@@ -53,6 +53,11 @@ class smartSendQuote extends smartSendAPI
     protected $_params = array();
 
 	/**
+	 * @var string Unique reference from the calling app; eg, order ID
+	 */
+	protected $_appReference;
+
+	/**
 	 * Initialise the Smart Send SOAP API
 	 *
 	 * @param string $username Smart Send VIP username
@@ -160,8 +165,6 @@ class smartSendQuote extends smartSendAPI
 
 	/**
 	 * Cache both params and quote results, index is Price ID
-	 *
-	 *
 	 */
 	protected function _cacheParams()
 	{
@@ -173,6 +176,11 @@ class smartSendQuote extends smartSendAPI
 			foreach( $quotes as $quote )
 			{
 				$priceID = $quote->PriceID;
+
+				// Cache key should be unique to this order and this price ID
+				if (!empty($this->_appReference))
+					$priceID .= '_'.$this->_appReference;
+
 				$cacheParams = SSCACHE.'quotes/req_'.$priceID;
 				file_put_contents($cacheParams, $requestParams);
 
@@ -250,6 +258,8 @@ class smartSendQuote extends smartSendAPI
 			if ( is_array( $returnError ) )
 				$returnError = implode( ", ", $returnError );
 		}
+		elseif (is_array($res) && isset($res['error']))
+			return array( 'error', $res['error']);
 
 		if (isset($returnError))
 			return array( 'error', $returnError);
@@ -286,6 +296,8 @@ class smartSendQuote extends smartSendAPI
 	{
 		list( $this->postcodeTo, $this->suburbTo, $this->stateTo ) = $toDetails;
 
+		$this->stateTo = strtoupper($this->stateTo);
+
 		if (strlen($this->postcodeTo) > 4 )
 			return "Suburb must be 4 digits";
 
@@ -300,7 +312,7 @@ class smartSendQuote extends smartSendAPI
 			return 'No towns are at '/$this->postcodeTo;
 		}
 
-		if (!in_array($this->suburbTo, $goodTowns))
+		if (!in_array(ucwords( strtolower($this->suburbTo)), $goodTowns))
 			return "Destination '".$this->suburbTo."' is not at postcode ".$this->postcodeTo.". Valid town/s are ".implode(", ", $goodTowns);
 
 		$this->_setParam( 'PostcodeTo', $this->postcodeTo );
@@ -338,6 +350,12 @@ class smartSendQuote extends smartSendAPI
 
 		return true;
 	}
+
+	public function setAppReference($ref)
+	{
+		$this->_appReference = $ref;
+	}
+
 
     /**
      * Add items to be shipped

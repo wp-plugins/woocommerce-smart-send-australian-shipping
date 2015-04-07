@@ -41,12 +41,20 @@ class smartSendOrder {
 		// Pull in Smart Send settings
 		$this->ssSettings = get_option( 'woocommerce_smart_send_settings', null );
 		$this->useTest = ( empty($this->ssSettings['usetestserver']) || $this->ssSettings['usetestserver'] == 'no') ? false : true;
+
 	}
 
 	protected function _connectBookJob() {
 		// Try to initialise bookJob order and add params
-		if ( !$this->bookJob )
-			$this->bookJob = new smartSendBook( $this->ssSettings['vipusername'], $this->ssSettings['vippassword'], $this->useTest );
+		if ( !$this->bookJob ) {
+			$this->bookJob = new smartSendBook( $this->ssSettings['vipusername'], $this->ssSettings['vippassword'],
+				$this->useTest );
+
+			if (!empty($this->wcMeta['SScacheKey'][0]))
+			{
+				$this->bookJob->setAppReference($this->wcMeta['SScacheKey'][0]);
+			}
+		}
 	}
 
 	protected function _connectTracking() {
@@ -242,7 +250,10 @@ class smartSendOrder {
             'StreetAddress1' => $this->ssSettings['originaddress']
         );
 
-	    if ($this->ssSettings['couriermessage'])
+	    if (!empty($this->ssSettings['originaddress2']))
+		    $bookParams['PickupDetails']['StreetAddress2'] = $this->ssSettings['originaddress'];
+
+	    if (!empty($this->ssSettings['couriermessage']))
 	    {
 		    $bookParams['PickupDetails']['StreetAddress2'] = 'NOTE: '.$this->ssSettings['couriermessage'];
 	    }
@@ -252,9 +263,11 @@ class smartSendOrder {
             'CompanyName'    => $this->wcMeta['_shipping_company'][0],
             'Name'           => substr( $this->wcMeta['_shipping_first_name'][0] . ' ' . $this->wcMeta['_shipping_last_name'][0], 0, 30),
             'Phone'          => $this->wcMeta['_billing_phone'][0],
-            'StreetAddress1' => $this->wcMeta['_shipping_address_1'][0],
-            'StreetAddress2' => $this->wcMeta['_shipping_address_2'][0]
+            'StreetAddress1' => $this->wcMeta['_shipping_address_1'][0]
         );
+
+	    if (!empty($this->wcMeta['_shipping_address_2'][0]))
+		    $bookParams['DestinationDetails']['StreetAddress2'] = $this->wcMeta['_shipping_address_2'][0];
 
         $this->bookJob->setParams( $bookParams );
     }

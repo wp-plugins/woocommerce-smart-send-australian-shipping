@@ -96,6 +96,11 @@ class smartSendBook extends smartSendAPI
     protected $_bookingResults;
 
     /**
+     * @var Reference from calling app - used for cache key
+     */
+    protected $_appReference;
+
+    /**
      * @var Possibly not needed
      */
     public $quoteDetails;
@@ -128,8 +133,8 @@ class smartSendBook extends smartSendAPI
      */
     protected function _setRequestParams()
     {
-        $cachePath = SSCACHE.'quotes/req_'.$this->priceId;
-        if (file_exists($cachePath))
+        $cachePath = SSCACHE.'quotes/req_'.$this->getCacheKey();
+        if (is_readable($cachePath))
         {
             $params = file_get_contents( $cachePath );
             $this->_params['request'] = unserialize($params);
@@ -145,9 +150,7 @@ class smartSendBook extends smartSendAPI
      */
     public function getQuoteDetails($priceId = null)
     {
-        if (!$priceId) $priceId = $this->priceId;
-
-        $cachePath = SSCACHE.'quotes/res_'.$this->priceId;
+        $cachePath = SSCACHE.'quotes/res_'.$this->getCacheKey();
         if (file_exists($cachePath))
         {
             $quote = file_get_contents( $cachePath );
@@ -168,6 +171,17 @@ class smartSendBook extends smartSendAPI
     public function setParams($arr)
     {
         return $this->_setParams($arr, 'details');
+    }
+
+    public function setAppReference($ref)
+    {
+        $this->_appReference = $ref;
+    }
+
+    protected function getCacheKey()
+    {
+        $key = $this->_appReference ? $this->priceId . '_' . $this->_appReference : $this->priceId;
+        return $key;
     }
 
     /**
@@ -333,8 +347,14 @@ class smartSendBook extends smartSendAPI
      * @param array $quote - Quote details relating to booking job
      *
      * @return string - Pickup date string
+     * @deprecated - Use static function puCalc instead
      */
     public function calcPickupDate($quote, $date = '')
+    {
+        return self::puCalc($quote, $date);
+    }
+
+    public static function puCalc($quote, $date='')
     {
         // Set to UTC +10
         $timePlus = time() + 60 * 60 * 10;

@@ -128,9 +128,10 @@ function smart_send_order_view_button($order)
             if (in_array($wcStatus, array('wc-processing', 'wc-completed')))
             {
                 $url .= '&set_status=ordered';
+                $shipDelay = !empty($ssSettings['ship_delay']) ? $ssSettings['ship_delay'] : 0;
                 // 10 hours gmt + shipping delay
-                $timePlus = time() + 36000 + 86400 * $ssSettings['ship_delay'];
-                if (!$ssSettings['ship_delay'])
+                $timePlus = time() + 36000 + 86400 * $shipDelay;
+                if (!$shipDelay)
                 {
                     $timePlus += (12 * 60 * 60 + 16 * 60); // Add 12 hours and 16 minutes to push over if past 11:45am
                 }
