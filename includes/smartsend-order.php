@@ -251,12 +251,7 @@ class smartSendOrder {
         );
 
 	    if (!empty($this->ssSettings['originaddress2']))
-		    $bookParams['PickupDetails']['StreetAddress2'] = $this->ssSettings['originaddress'];
-
-	    if (!empty($this->ssSettings['couriermessage']))
-	    {
-		    $bookParams['PickupDetails']['StreetAddress2'] = 'NOTE: '.$this->ssSettings['couriermessage'];
-	    }
+		    $bookParams['PickupDetails']['StreetAddress2'] = $this->ssSettings['originaddress2'];
 
         // Collate destination details
         $bookParams['DestinationDetails'] = array(
