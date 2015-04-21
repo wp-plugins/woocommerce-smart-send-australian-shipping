@@ -267,6 +267,19 @@ class smartSendQuote extends smartSendAPI
 		// We have quote-age!
 		$useQuotes = $this->_extractQuotes();
 
+		if (count($useQuotes))
+		{
+			foreach( range( 1, count($useQuotes)) as $q )
+			{
+				$i = $q-1;
+				$useQuotes[$i]->Discount = sprintf("%1.2f", $useQuotes[$i]->Discount );
+				$useQuotes[$i]->TotalDiscount = sprintf("%1.2f", $useQuotes[$i]->TotalDiscount );
+				$useQuotes[$i]->TotalGST = sprintf("%1.2f", $useQuotes[$i]->TotalGST );
+				$useQuotes[$i]->TotalPrice = sprintf("%1.2f", $useQuotes[$i]->TotalPrice );
+				$useQuotes[$i]->TotalTransportAssurance = sprintf("%02f", $useQuotes[$i]->TotalTransportAssurance );
+			}
+		}
+
 		return $useQuotes;
 	}
 
@@ -294,9 +307,19 @@ class smartSendQuote extends smartSendAPI
 	 */
 	public function setTo( $toDetails )
 	{
-		list( $this->postcodeTo, $this->suburbTo, $this->stateTo ) = $toDetails;
+		list( $this->postcodeTo, $this->suburbTo, $stateTo ) = $toDetails;
 
-		$this->stateTo = strtoupper($this->stateTo);
+		$this->stateTo = strtoupper($stateTo);
+
+		if (!in_array($this->stateTo, array_keys(self::$ozStates)))
+		{
+			$cleanState = self::abbrevState($stateTo);
+			if (!$cleanState)
+				return "The state '$stateTo' is not a valid Australian state";
+		}
+
+		if ($this->stateTo != self::getState($this->postcodeTo))
+			return "Postcode '".$this->postcodeTo."' doesn't come from ".$this->stateTo.".";
 
 		if (strlen($this->postcodeTo) > 4 )
 			return "Suburb must be 4 digits";
@@ -306,7 +329,7 @@ class smartSendQuote extends smartSendAPI
 			return 'Destination postcode '.$this->postcodeTo.' is not in '.$this->stateTo;
 
 		// Check if town is at that suburb
-		$goodTowns = $this->_getPostcodeTowns($this->postcodeTo);
+		$goodTowns = $this->getPostcodeTowns($this->postcodeTo);
 		if ($goodTowns === false)
 		{
 			return 'No towns are at '/$this->postcodeTo;

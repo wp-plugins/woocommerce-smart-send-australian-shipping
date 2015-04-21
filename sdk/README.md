@@ -1,6 +1,8 @@
 Smart Send PHP SDK
 ==================
 
+**Version 2.0.1**
+
 Introduction
 ------------
 

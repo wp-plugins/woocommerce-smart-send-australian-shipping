@@ -106,7 +106,7 @@ class smartSendAPI
     /**
      * @var bool Debug flag
      */
-    public static $SSdebug = false;
+    public static $SSdebug = true;
 
     // Package descriptions
 
@@ -162,6 +162,17 @@ class smartSendAPI
         'Between 1pm - 5pm',
         'Within 30 minutes of Booking during business hours'
     );
+
+	public static $ozStates = array(
+		'ACT' => 'Australian Capital Territory',
+		'NSW' => 'New South Wales',
+		'VIC' => 'Victoria',
+		'QLD' => 'Queensland',
+		'SA'  => 'South Australia',
+		'WA'  => 'Western Australia',
+		'TAS' => 'Tasmania',
+		'NT'  => 'Northern Territory'
+	);
 
     /**
      * @var array Possibly overly complicated way of parsing expected parameters for 'request' params
@@ -455,7 +466,7 @@ class smartSendAPI
         if (!preg_match( '/^\d{4}$/', $postcode )) {
             return 'bad postcode';
         }
-        $towns = $this->_getPostcodeTowns( $postcode );
+        $towns = $this->getPostcodeTowns( $postcode );
         if (!$towns) {
             return array();
         }
@@ -470,7 +481,7 @@ class smartSendAPI
      *
      * @return array|bool|string
      */
-    protected function _getPostcodeTowns( $postcode )
+    public function getPostcodeTowns( $postcode )
     {
         if (!preg_match( '/^\d{4}$/', $postcode )) {
             return 'bad postcode';
@@ -486,6 +497,49 @@ class smartSendAPI
         }
 
         return $list;
+    }
+
+    public function checkTownInPostcode($town, $postcode)
+    {
+        $towns = $this->getPostcodeTowns($postcode);
+        $town = preg_replace( '/[^a-z]/', '', strtolower($town));
+
+        foreach( $towns as $t )
+        {
+            if ( preg_replace( '/[^a-z]/', '', strtolower($t)) == $town)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check that this is a good address
+     *
+     * @param $town
+     * @param $postcode
+     * @param $state
+     *
+     * @return array|bool - Return true if all good, error array if npt
+     */
+    public function addressVerify( $town, $postcode, $state )
+    {
+        $errors = [];
+
+        // First check that town is in postcode
+        if (!$this->checkTownInPostcode($town, $postcode))
+            $errors[] = "<strong>$town</strong> is not at postcode <strong>$postcode</strong>";
+
+        // Check that postcode matches state
+        $state = self::checkState($state); // Clean if needed
+        if ($state != self::getState($postcode))
+            $errors[] = "Postcode <strong>$postcode</strong> does not belong in state <strong>$state</strong>";
+
+        if (count($errors))
+            return $errors;
+
+        return true;
     }
 
     /**
@@ -543,6 +597,56 @@ class smartSendAPI
             return 'NT';
         }
     }
+
+	/**
+	 * Sometimes a non-abbreviated state name will come through (eg New South Wales)
+	 * Convert it to the abbreviated version.
+	 *
+	 * @param $text
+	 *
+	 * @return mixed - False if not found, abbreviation if it is
+	 */
+	public static function abbrevState($text)
+	{
+        // Possible conversions
+		$filter = array(
+			'australian capital territory' => 'ACT',
+			'australian capitol territory' => 'ACT',
+			'new south wales'              => 'NSW',
+			'victoria'                     => 'VIC',
+			'queensland'                   => 'QLD',
+			'south australia'              => 'SA',
+			'western australia'            => 'WA',
+			'west australia'               => 'WA',
+			'northern territory'           => 'NT',
+			'tasmania'                     => 'TAS'
+		);
+
+		$check = preg_replace( '/[^a-z]/', '', strtolower($text));
+
+		if (empty($filter[$check]))
+			return false;
+
+		return $filter[$check];
+	}
+
+    /**
+     *  Return state code if valid; return false if not
+     *
+     * @param $state - Abbreviated state
+     *
+     * @return mixed - false if not found at all, state code if found
+     */
+	public static function checkState($state)
+	{
+        // First check if matches normal abbrev
+        if (strlen($state) < 4 )
+        {
+            if (isset(self::$ozStates[$state]))
+                return $state;
+        }
+        return self::abbrevState($state);
+	}
 
 
     /**
@@ -606,6 +710,14 @@ class smartSendAPI
      */
     protected function _logSoap( $soap )
     {
+        if ( !self::$SSdebug)
+            return '';
+
+        if (empty($soap->__last_response))
+        {
+            return 'No SOAP response';
+        }
+
         $logString = "Request Headers:\n========================\n\n" . $soap->__last_request_headers . "Request:\n========================\n\n" . $soap->__last_request .
                      "Response Headers:\n========================\n\n" . $soap->__last_response_headers . "Response:\n========================\n\n" . $soap->__last_response . "\n\n\n";
         self::debugLog( 'soap', $logString );
