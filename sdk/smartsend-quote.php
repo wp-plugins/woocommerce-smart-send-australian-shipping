@@ -121,6 +121,8 @@ class smartSendQuote extends smartSendAPI
 		// Check for required
 		$missing = $this->_checkRequired($this->_requestRequired, 'request');
 
+		$this->_checkItemClasses();
+
 		if( count($missing))
 			return array( 'error' => "Missing parameters: \n".implode( "\n -", $missing) );
 
@@ -309,6 +311,8 @@ class smartSendQuote extends smartSendAPI
 	{
 		list( $this->postcodeTo, $this->suburbTo, $stateTo ) = $toDetails;
 
+		$this->suburbTo = ucwords(strtolower($this->suburbTo));
+
 		$this->stateTo = strtoupper($stateTo);
 
 		if (!in_array($this->stateTo, array_keys(self::$ozStates)))
@@ -443,6 +447,51 @@ class smartSendQuote extends smartSendAPI
 		$this->_params['request']['Items'][] = $itemData;
 
         return true;
+	}
+
+	/**
+	 * Go through registered items and check for fixed price / normal class shipping types.
+	 * Convert fixed price items to 'Satchel/Bag' if they are.
+	 */
+	protected function _checkItemClasses()
+	{
+		$items = $this->_params['request']['Items'];
+		if (count($items) == 1)
+			return;
+
+		$itemTypes = array();
+
+		$normal = false;
+		$fixedPrice = array();
+
+		foreach($items as $item)
+		{
+			$type = $item['Description'];
+
+			if (preg_match( '/fixed price/', $type))
+			{
+				if (!isset($fixedPrice[$type]))
+					$fixedPrice[$type] = 0;
+
+				$fixedPrice[$type]++;
+			}
+			else
+				$normal = true;
+		}
+
+		// Change fixed price to 'Satchel/Bag'
+		if ($normal === true && count($fixedPrice) || count(array_keys($fixedPrice)) > 1 )
+		{
+			foreach($items as $i => $item)
+			{
+				$type = $item['Description'];
+				if (preg_match( '/fixed price/', $type))
+				{
+					$this->_params['request']['Items'][$i]['Description'] = 'Satchel/Bag';
+					$this->_params['request']['Items'][$i]['Weight'] = ceil($this->_params['request']['Items'][$i]['Weight']);
+				}
+			}
+		}
 	}
 
 	/**

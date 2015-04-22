@@ -502,16 +502,28 @@ class smartSendAPI
     public function checkTownInPostcode($town, $postcode)
     {
         $towns = $this->getPostcodeTowns($postcode);
-        $town = preg_replace( '/[^a-z]/', '', strtolower($town));
+        $town = self::townFilter($town);
 
         foreach( $towns as $t )
         {
-            if ( preg_replace( '/[^a-z]/', '', strtolower($t)) == $town)
+            if ( self::townFilter($t) == $town)
             {
                 return true;
             }
         }
-        return false;
+        return $towns;
+    }
+
+    /**
+     * Take a town and return a version without non-alpha, upper case first letters
+     *
+     * @param $town
+     *
+     * @return string - Cleansed town string
+     */
+    public static function townFilter($town)
+    {
+        return ucwords( preg_replace( '/[^a-z]/', '', strtolower($town)));
     }
 
     /**
@@ -525,11 +537,12 @@ class smartSendAPI
      */
     public function addressVerify( $town, $postcode, $state )
     {
-        $errors = [];
+        $errors = array();
 
+        $inTown = $this->checkTownInPostcode($town, $postcode);
         // First check that town is in postcode
-        if (!$this->checkTownInPostcode($town, $postcode))
-            $errors[] = "<strong>$town</strong> is not at postcode <strong>$postcode</strong>";
+        if (is_array($inTown))
+            $errors[] = '<strong>'.self::townFilter($town)."</strong> is not at postcode <strong>$postcode</strong>. Valid suburbs are '".implode("', '", $inTown)."'";
 
         // Check that postcode matches state
         $state = self::checkState($state); // Clean if needed
