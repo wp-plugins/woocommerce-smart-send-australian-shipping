@@ -1,5 +1,7 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  *  Add extra Smart Send shipping options on the checkout page
@@ -119,14 +121,53 @@ function smartSendCheckoutAjax()
 	exit( $status );
 }
 
+// Add these fields so they can get through the frickin' array overlay filter
+// TODO: Can probably delete this stuff
+
+//add_filter('woocommerce_default_address_fields', 'wc_smartsend_default_address_fields');
+//function wc_smartsend_default_address_fields($fields)
+//{
+//	$fields['postcode']['maxlength'] = '';
+//	$fields['postcode']['custom_attributes'] = array();
+//	$fields['postcode']['custom_attributes']['pattern'] = '';
+//	$fields['postcode']['custom_attributes']['title'] = '';
+//
+//	$fields['billing_phone']['maxlength'] = '';
+//	$fields['billing_phone']['custom_attributes'] = array();
+//	$fields['billing_phone']['custom_attributes']['pattern'] = '';
+//	$fields['billing_phone']['custom_attributes']['title'] = '';
+//
+//	$fields['email']['maxlength'] = '';
+//
+//	return $fields;
+//}
+
+// Set some defaults for AU
+//add_filter( 'woocommerce_get_country_locale', 'wc_smartsend_get_country_locale_base' );
+//function wc_smartsend_get_country_locale_base($locale)
+//{
+//	$locale['AU']['postcode']['custom_attributes']['pattern'] = '\d{4}';
+//	$locale['AU']['postcode']['custom_attributes']['title'] = 'Must be a 4 digit number';
+//	$locale['AU']['postcode']['maxlength'] = '4';
+//
+//	$locale['AU']['billing_phone']['custom_attributes']['pattern'] = '\d{10}';
+//	$locale['AU']['billing_phone']['custom_attributes']['title'] = 'Must be a 10 digit number';
+//	$locale['AU']['billing_phone']['maxlength'] = '10';
+//
+//	$locale['AU']['email']['maxlength'] = '255';
+//	return $locale;
+//}
+
 
 // Postcode sets suburb dropdown on town, sets state
 
 add_filter( 'woocommerce_billing_fields', 'wc_smartsend_checkout_fields', 10, 1 );
 add_filter( 'woocommerce_shipping_fields', 'wc_smartsend_checkout_fields', 10, 1 );
 
+
 function wc_smartsend_checkout_fields( $address_fields )
 {
+
 	// Put billing city after postcode
 	$newFields = array();
 	foreach( $address_fields as $k => $v )
@@ -142,36 +183,21 @@ function wc_smartsend_checkout_fields( $address_fields )
 		if ($k == 'billing_postcode' || $k == 'shipping_postcode')
 		{
 			$newFields[ $temp1 ] = $temp2;
-			$newFields[$k]['custom_attributes']['pattern'] = '\d{4}';
-			$newFields[$k]['custom_attributes']['title'] = 'Must be a 4 digit number';
-			$newFields[$k]['maxlength'] = '4';
 		}
 
 		// Set 30 char limit on these
 		preg_match( '/^(billing|shipping)_(.*)/', $k, $bits);
 		if ( in_array($bits[2], array('company', 'address_1', 'address_2')))
 		{
-			$newFields[$k]['custom_attributes']['maxlength'] = '30';
+			$newFields[$k]['maxlength'] = '30';
 		}
-
-		if ($bits[2] == 'email')
-		{
-			$newFields[$k]['maxlength'] = '100';
-		}
-	}
-	if ( isset($newFields['billing_phone']) )
-	{
-		$newFields['billing_phone']['custom_attributes']['pattern'] = '\d{10}';
-		$newFields['billing_phone']['custom_attributes']['title'] = 'Must be a 10-digit phone number';
-		$newFields[$k]['maxlength'] = '10';
-//		$newFields[$k]['type'] = 'phone';
 	}
 
 	return $newFields;
 }
 
+// Enables city in cart calculator
 add_filter('woocommerce_shipping_calculator_enable_city', 'smartSendEnableCity');
-
 function smartSendEnableCity()
 {
 	return true;
@@ -251,6 +277,10 @@ function woocommerce_smart_send_checkout_js()
 		// Suburbs
 		var suburbs = {<?php echo implode( ', ', $locSimple); ?>};
 
+		// Preserve state of attributes
+		var billPostcodePattern, shipPostcodePattern, billPostcodeTitle, shipPostcodeTitle, billPostcodeMax, shipPostcodeMax,
+			billAdd1Max, billAdd2Max, shipAdd1Max, shipAdd2Max;
+
 		jQuery( document ).ready( function($){
 
 			$("#billing_postcode, #shipping_postcode").on( "keyup", function() {
@@ -272,6 +302,78 @@ function woocommerce_smart_send_checkout_js()
 					});
 
 					$("#"+cartSide+"_city").autocomplete( "search", "");
+				}
+			});
+			// When billing_country or shipping_country are changed to Australia, place AU restrictions on text elements
+			// billing_postcode/shipping_postcode pattern=\d{4}, title=Must be a 4 digit number, maxlength=4
+			// billing/shipping_address_1/2 maxlength=30
+			// billing_phone pattern=\d{10}, title=Must be a 10 digit number, maxlength=10
+			$("#billing_country, #shipping_country").on("change", function() {
+
+				if ($(this).attr("name") == 'billing_country')
+				{
+					$bPh = $("#billing_phone");
+					$bPo = $("#billing_postcode");
+
+					if ($(this).val() == 'AU')
+					{
+						if ($bPo.length)
+						{
+							billPostcodeMax = $bPo.attr("maxlength");
+							$bPo.attr("maxlength", 4);
+
+							billPostcodePattern = $bPo.attr("pattern");
+							$bPo.attr("pattern", "\d{4}");
+
+							billPostcodeTitle = $bPo.attr("title");
+							$bPo.attr("title", "Must be a 4-digit number");
+						}
+
+						if ($bPh.length)
+						{
+							shipPostcodeMax = $bPh.attr("maxlength");
+							$bPh.attr("maxlength", 10);
+
+							shipPostcodePattern = $bPh.attr("pattern");
+							$bPh.attr("pattern", "\d{10}");
+
+							shipPostcodeTitle = $bPh.attr("title");
+							$bPh.attr("title", "Must be a 10 digit number");
+						}
+					}
+					else
+					{
+						$bPo.removeAttr("maxlength");
+						$bPo.removeAttr("pattern");
+						$bPo.removeAttr("title");
+
+						$bPh.removeAttr("maxlength");
+						$bPh.removeAttr("pattern");
+						$bPh.removeAttr("title");
+					}
+				}
+				else
+				{
+					$sPo = $("#shipping_postcode");
+
+					if ($(this).val() == 'AU') {
+						if ($sPo.length) {
+							shipPostcodeMax = $sPo.attr("maxlength");
+							$sPo.attr("maxlength", 4);
+
+							shipPostcodePattern = $sPo.attr("pattern");
+							$sPo.attr("pattern", "\d{4}");
+
+							shipPostcodeTitle = $sPo.attr("title");
+							$sPo.attr("title", "Must be a 4-digit number");
+						}
+					}
+					else
+					{
+						$sPo.removeAttr("maxlength");
+						$sPo.removeAttr("pattern");
+						$sPo.removeAttr("title");
+					}
 				}
 			});
 		});

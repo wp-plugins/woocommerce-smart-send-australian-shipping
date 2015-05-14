@@ -1,5 +1,7 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 add_action( 'admin_print_styles', 'smartsend_enqueue_admin_scripts', 15);
 
 function smartsend_enqueue_admin_scripts()

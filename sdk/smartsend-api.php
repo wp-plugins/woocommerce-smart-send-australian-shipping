@@ -172,6 +172,154 @@ class smartSendAPI
 		'WA'  => 'Western Australia',
 		'TAS' => 'Tasmania',
 		'NT'  => 'Northern Territory'
+    );
+
+	public static $stdPackages = array(
+
+		// Aust Post Mailing Boxes
+		'Australia Post Mailing Box Bx1' => array(
+			'type' => 'Carton',
+			'dimensions' => array(22, 16, 7.7),
+			'weight' => '1'
+		),
+		'Australia Post Mailing Box Bx2' => array(
+			'type' => 'Carton',
+			'dimensions' => array(31, 22.5, 10.2),
+			'weight' => '3'
+		),
+		'Australia Post Mailing Box Bx3' => array(
+			'type' => 'Carton',
+			'dimensions' => array(40, 40, 18),
+			'weight' => '5'
+		),
+		'Australia Post Mailing Box Bx4' => array(
+			'type' => 'Carton',
+			'dimensions' => array(43, 30.5, 14),
+			'weight' => '5'
+		),
+		'Australia Post Mailing Box Bx5' => array(
+			'type' => 'Carton',
+			'dimensions' => array(40.5, 30, 25.5),
+			'weight' => '6'
+		),
+		'Australia Post Mailing Box Bx18' => array(
+			'type' => 'Carton',
+			'dimensions' => array(18, 18, 18),
+			'weight' => '4'
+		),
+		'Australia Post Mailing Box Bx20' => array(
+			'type' => 'Carton',
+			'dimensions' => array(35, 50, 44),
+			'weight' => ''
+		),
+		'Australia Post Video/DVD Bx6' => array(
+			'type' => 'Carton',
+			'dimensions' => array(22, 14.5, 3.5),
+			'weight' => ''
+		),
+
+		// Aust Post Padded Bags
+		'Australia Post Padded Bag Pb1' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(12.7, 17.8, 0),
+			'weight' => ''
+		),
+		'Australia Post Padded Bag Pb2' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(15.1, 22.9, 0),
+			'weight' => ''
+		),
+		'Australia Post Padded Bag Pb3' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(21.5, 28, 0),
+			'weight' => ''
+		),
+		'Australia Post Padded Bag Pb4' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(26.6, 38.1, 0),
+			'weight' => ''
+		),
+		'Australia Post Padded Bag Pb5' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(36.1, 48.3, 0),
+			'weight' => ''
+		),
+		'Australia Post Padded Bag (Recycled) Pb8' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(24.5, 33.5, 0),
+			'weight' => ''
+		),
+		'Australia Post Padded Bag Pb9' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(36, 48, 0),
+			'weight' => ''
+		),
+
+		// Aust Post Tough Bags
+		'Australia Post Tough Bag Tb1' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(21.6, 27.5, 6.5),
+			'weight' => ''
+		),
+		'Australia Post Tough Bag Tb2' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(24.1, 33.8, 6.5),
+			'weight' => ''
+		),
+		'Australia Post Tough Bag Tb3' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(26.6, 37.6, 6.5),
+			'weight' => ''
+		),
+		'Australia Post Expandable Tough Bag Tb5' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(37, 40.5, 7.5),
+			'weight' => ''
+		),
+		'Australia Post Expandable Tough Bag Tb6' => array(
+			'type' => 'Satchel/Bag',
+			'dimensions' => array(40.5, 67, 11.5),
+			'weight' => ''
+		),
+		'Australia Post Expandable Tough Bax Bx8' => array(
+			'type' => 'Carton',
+			'dimensions' => array(36.3, 21.2, 6.5),
+			'weight' => ''
+		),
+
+		// Aust Post Mailing Tubes
+		'Australia Post Mailing Tube Tu1' => array(
+			'type' => 'Tube',
+			'dimensions' => array(42, 6, 6),
+			'weight' => ''
+		),
+		'Australia Post Mailing Tube Tu2' => array(
+			'type' => 'Tube',
+			'dimensions' => array(42, 6, 6),
+			'weight' => ''
+		),
+		'Australia Post Mailing Tube Tu3' => array(
+			'type' => 'Tube',
+			'dimensions' => array(66, 6, 6),
+			'weight' => ''
+		),
+
+		// Aust Post Other
+		'Australia Post CD Mailer' => array(
+			'type' => 'Carton',
+			'dimensions' => array(14.5, 12.7, 1),
+			'weight' => ''
+		),
+		'Australia Post Wine Box (Single)' => array(
+			'type' => 'Carton',
+			'dimensions' => array(13.2, 10.5, 39.5),
+			'weight' => ''
+		),
+		'Australia Post Wine Box (Twin)' => array(
+			'type' => 'Carton',
+			'dimensions' => array(13.2, 10.5, 39.5),
+			'weight' => ''
+		)
 	);
 
     /**
