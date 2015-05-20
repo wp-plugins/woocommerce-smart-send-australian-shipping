@@ -323,7 +323,7 @@ function woocommerce_smart_send_checkout_js()
 							$bPo.attr("maxlength", 4);
 
 							billPostcodePattern = $bPo.attr("pattern");
-							$bPo.attr("pattern", "\d{4}");
+							$bPo.attr("pattern", '[0-9]{4}');
 
 							billPostcodeTitle = $bPo.attr("title");
 							$bPo.attr("title", "Must be a 4-digit number");
@@ -335,7 +335,7 @@ function woocommerce_smart_send_checkout_js()
 							$bPh.attr("maxlength", 10);
 
 							shipPostcodePattern = $bPh.attr("pattern");
-							$bPh.attr("pattern", "\d{10}");
+							$bPh.attr("pattern", '[0-9]{10}');
 
 							shipPostcodeTitle = $bPh.attr("title");
 							$bPh.attr("title", "Must be a 10 digit number");
@@ -362,7 +362,7 @@ function woocommerce_smart_send_checkout_js()
 							$sPo.attr("maxlength", 4);
 
 							shipPostcodePattern = $sPo.attr("pattern");
-							$sPo.attr("pattern", "\d{4}");
+							$sPo.attr("pattern", "[0-9]{4}");
 
 							shipPostcodeTitle = $sPo.attr("title");
 							$sPo.attr("title", "Must be a 4-digit number");

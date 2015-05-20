@@ -40,9 +40,19 @@ if (!defined( 'SSLABELS' )) {
     define( 'SSLABELS', SSBASE . 'labels/' );
 }
 
+//if (!defined( 'CALLSRC' )) {
+//    define( 'CALLSRC', 'sdk' );
+//}
+//
+//if (!defined( 'CALLVER' )) {
+//    define( 'CALLVER', '2.3' );
+//}
+
 
 /**
  * Class smartSendAPI
+ *
+ * V 2.3
  *
  * Core Smart Send SDK functionality and settings
  */
@@ -176,146 +186,203 @@ class smartSendAPI
 
 	public static $stdPackages = array(
 
+        // Best Price Courier Satchels
+        'Best Price 1kg Road Satchel' => array(
+            'type' => '1kg fixed price road satchel',
+            'dimensions' => array(19, 26, 4),
+            'weight' => '1'
+        ),
+        'Best Price 3kg Road Satchel' => array(
+            'type' => '3kg fixed price road satchel',
+            'dimensions' => array(32, 42, 7),
+            'weight' => '3'
+        ),
+        'Best Price 5kg Road Satchel' => array(
+            'type' => '5kg fixed price road satchel',
+            'dimensions' => array(43, 59, 7),
+            'weight' => '5'
+        ),
+
+        // Fastway Courier Satchels
+        'Fastway 1kg Road Satchel' => array(
+            'type' => 'Satchel/Bag',
+            'dimensions' => array(19, 26, 4),
+            'weight' => '1'
+        ),
+        'Fastway 3kg Road Satchel' => array(
+            'type' => 'Satchel/Bag',
+            'dimensions' => array(32, 44, 7),
+            'weight' => '3'
+        ),
+        'Fastway 5kg Road Satchel' => array(
+            'type' => 'Satchel/Bag',
+            'dimensions' => array(45, 61, 7),
+            'weight' => '5'
+        ),
+
+        // Couriers Please Courier Satchels
+        'Couriers Please 500g Road Satchel' => array(
+            'type' => '500gm fixed price road satchel',
+            'dimensions' => array(22, 33, 2),
+            'weight' => '.5'
+        ),
+        'Couriers Please 1kg Road Satchel' => array(
+            'type' => '1kg fixed price road satchel',
+            'dimensions' => array(27, 35, 4),
+            'weight' => '1'
+        ),
+        'Couriers Please 3kg Road Satchel' => array(
+            'type' => '3kg fixed price road satchel',
+            'dimensions' => array(33, 42, 7),
+            'weight' => '3'
+        ),
+        'Couriers Please 5kg Road Satchel' => array(
+            'type' => '5kg fixed price road satchel',
+            'dimensions' => array(43, 59, 7),
+            'weight' => '5'
+        ),
+
+
 		// Aust Post Mailing Boxes
-		'Australia Post Mailing Box Bx1' => array(
+		'Mailing Box Bx1 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(22, 16, 7.7),
 			'weight' => '1'
 		),
-		'Australia Post Mailing Box Bx2' => array(
+		'Mailing Box Bx2 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(31, 22.5, 10.2),
 			'weight' => '3'
 		),
-		'Australia Post Mailing Box Bx3' => array(
+		'Mailing Box Bx3 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(40, 40, 18),
 			'weight' => '5'
 		),
-		'Australia Post Mailing Box Bx4' => array(
+		'Mailing Box Bx4 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(43, 30.5, 14),
 			'weight' => '5'
 		),
-		'Australia Post Mailing Box Bx5' => array(
+		'Mailing Box Bx5 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(40.5, 30, 25.5),
 			'weight' => '6'
 		),
-		'Australia Post Mailing Box Bx18' => array(
+		'Mailing Box Bx18 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(18, 18, 18),
 			'weight' => '4'
 		),
-		'Australia Post Mailing Box Bx20' => array(
+		'Mailing Box Bx20 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(35, 50, 44),
 			'weight' => ''
 		),
-		'Australia Post Video/DVD Bx6' => array(
+		'Video/DVD Bx6 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(22, 14.5, 3.5),
 			'weight' => ''
 		),
 
 		// Aust Post Padded Bags
-		'Australia Post Padded Bag Pb1' => array(
+		'Padded Bag Pb1 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(12.7, 17.8, 0),
 			'weight' => ''
 		),
-		'Australia Post Padded Bag Pb2' => array(
+		'Padded Bag Pb2 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(15.1, 22.9, 0),
 			'weight' => ''
 		),
-		'Australia Post Padded Bag Pb3' => array(
+		'Padded Bag Pb3' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(21.5, 28, 0),
 			'weight' => ''
 		),
-		'Australia Post Padded Bag Pb4' => array(
+		'Padded Bag Pb4 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(26.6, 38.1, 0),
 			'weight' => ''
 		),
-		'Australia Post Padded Bag Pb5' => array(
+		'Padded Bag Pb5 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(36.1, 48.3, 0),
 			'weight' => ''
 		),
-		'Australia Post Padded Bag (Recycled) Pb8' => array(
+		'Padded Bag (Recycled) Pb8 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(24.5, 33.5, 0),
 			'weight' => ''
 		),
-		'Australia Post Padded Bag Pb9' => array(
+		'Padded Bag Pb9 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(36, 48, 0),
 			'weight' => ''
 		),
 
 		// Aust Post Tough Bags
-		'Australia Post Tough Bag Tb1' => array(
+		'Tough Bag Tb1 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(21.6, 27.5, 6.5),
 			'weight' => ''
 		),
-		'Australia Post Tough Bag Tb2' => array(
+		'Tough Bag Tb2 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(24.1, 33.8, 6.5),
 			'weight' => ''
 		),
-		'Australia Post Tough Bag Tb3' => array(
+		'Tough Bag Tb3 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(26.6, 37.6, 6.5),
 			'weight' => ''
 		),
-		'Australia Post Expandable Tough Bag Tb5' => array(
+		'Expandable Tough Bag Tb5 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(37, 40.5, 7.5),
 			'weight' => ''
 		),
-		'Australia Post Expandable Tough Bag Tb6' => array(
+		'Expandable Tough Bag Tb6 (Australia Post)' => array(
 			'type' => 'Satchel/Bag',
 			'dimensions' => array(40.5, 67, 11.5),
 			'weight' => ''
 		),
-		'Australia Post Expandable Tough Bax Bx8' => array(
+		'Expandable Tough Bag Bx8 (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(36.3, 21.2, 6.5),
 			'weight' => ''
 		),
 
 		// Aust Post Mailing Tubes
-		'Australia Post Mailing Tube Tu1' => array(
+		'Mailing Tube Tu1 (Australia Post)' => array(
 			'type' => 'Tube',
 			'dimensions' => array(42, 6, 6),
 			'weight' => ''
 		),
-		'Australia Post Mailing Tube Tu2' => array(
+		'Mailing Tube Tu2 (Australia Post)' => array(
 			'type' => 'Tube',
 			'dimensions' => array(42, 6, 6),
 			'weight' => ''
 		),
-		'Australia Post Mailing Tube Tu3' => array(
+		'Mailing Tube Tu3 (Australia Post)' => array(
 			'type' => 'Tube',
 			'dimensions' => array(66, 6, 6),
 			'weight' => ''
 		),
 
 		// Aust Post Other
-		'Australia Post CD Mailer' => array(
+		'CD Mailer (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(14.5, 12.7, 1),
 			'weight' => ''
 		),
-		'Australia Post Wine Box (Single)' => array(
+		'Wine Box (Single) (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(13.2, 10.5, 39.5),
 			'weight' => ''
 		),
-		'Australia Post Wine Box (Twin)' => array(
+		'Wine Box (Twin) (Australia Post)' => array(
 			'type' => 'Carton',
 			'dimensions' => array(13.2, 10.5, 39.5),
 			'weight' => ''

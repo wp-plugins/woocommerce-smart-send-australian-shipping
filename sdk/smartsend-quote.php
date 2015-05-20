@@ -58,6 +58,13 @@ class smartSendQuote extends smartSendAPI
 	protected $_appReference;
 
 	/**
+	 * @var array If packing, will record instructions for packing shipping at fulfillment
+	 */
+	protected $_packingInstructions;
+
+	protected $_packages = array();
+
+	/**
 	 * Initialise the Smart Send SOAP API
 	 *
 	 * @param string $username Smart Send VIP username
@@ -81,7 +88,9 @@ class smartSendQuote extends smartSendAPI
 			'PromotionalCode'    => $this->promotionalCode,
 			'OnlineSellerId'     => $this->onlineSellerId,
 			'ReceiptedDelivery'  => 0,
-			'DeveloperId'        => $this->developerId
+			'DeveloperId'        => $this->developerId/*,
+			'callsrc'            => CALLSRC,
+			'callver'            => CALLVER*/
 		);
 	}
 
@@ -190,6 +199,13 @@ class smartSendQuote extends smartSendAPI
 				$quoteData = serialize( smart_send_objectToArray($quote) );
 				$cacheQuote = SSCACHE.'quotes/res_'.$priceID;
 				file_put_contents($cacheQuote, $quoteData);
+
+				// Also, packing instructions if present
+				if (count($this->_packingInstructions))
+				{
+					$cachePacking = SSCACHE.'quotes/packing_'.$priceID;
+					file_put_contents($cachePacking, serialize($this->_packingInstructions));
+				}
 			}
 		}
 	}
@@ -450,6 +466,104 @@ class smartSendQuote extends smartSendAPI
 	}
 
 	/**
+	 * @return mixed - Array of items or false
+	 */
+	public function getItemList()
+	{
+		if (!empty($this->_params['request']['Items']))
+			return $this->_params['request']['Items'];
+		return false;
+	}
+
+	/**
+	 * Given an item in the format you'd submit to addItem, and a list of packages, set items as the packages
+	 *
+	 * @param $qty      - Quantity of items
+	 * @param $itemName - Title of product
+	 * @param $itemData - Shipping-related data for product. Format [ Description, Depth, Height, Length, Weight ]
+	 * @param $packages - Format Name => [ Fits, Weight ] Weight (max. weight) is optional
+	 *
+	 * Process and make submissions to addItem
+	 *
+	 * @return array - List of items/packages
+	 */
+	public function packageItem($qty, $itemName, $itemData, $packages)
+	{
+		// If no packages have been set up for this product
+		if (!$packages)
+		{
+			$ret = array();
+			// Add the cart item/s to the list for API calculations
+			foreach ( range( 1, $qty ) as $blah )
+			{
+				$res = $this->addItem( $itemData );
+				if ($res !== true )
+					return $res;
+				$ret[] = $itemData;
+			}
+			return $ret;
+		}
+
+		$this->_packOne( $qty, $itemName, $itemData, $packages );
+	}
+
+	/**
+	 * Create packing list, apportion items to packages. Recurse until all items are packed.
+	 *
+	 * @param int $qty         - Actual number of items to pack
+	 * @param string $itemName - Human-readable package description
+	 * @param array $itemData  - [ Description, Depth, Height, Length, Weight ]
+	 * @param array $packages  - Format [ $fits, [Name, Length, Width, ..Depth, ..Weight ]] (Depth and max weight are optional)
+	 */
+	protected function _packOne($qty, $itemName, $itemData, $packages )
+	{
+		$itemName = sanitize_title($itemName);
+		if (!isset($this->_packages[$itemName]))
+		{
+			asort( $packages );
+			$this->_packages[$itemName] = $packages;
+		}
+
+		// Move up from smallest to largest package (by indicated capacity)
+		// If none are bigger than the quantity, we just use the biggest and move on
+		foreach( $this->_packages[$itemName] as $pkg => $pData)
+		{
+			// Check if the number fits
+			$thisPackage = $pkg;
+			list( $thisFits, $pkgAttr) = $pData;
+			$maxWeight = $pkgAttr['maxweight'];
+
+			if ($qty < $thisFits && $qty*$itemData['weight'] < $maxWeight)
+				break;
+		}
+
+		// In to this package goes either $thisFits or floor($maxweight/item weight)
+		$pkgTakes = $maxWeight ? floor( $maxWeight / $itemData['Weight'] ) : $thisFits;
+		$pkgWeight = $itemData['Weight']*$pkgTakes;
+
+		// Add packing instruction
+		$this->_packingInstructions[] = array( $pkg, $pkgTakes);
+
+		// Add item to quote list: $itemData [ Description, Depth, Height, Length, Weight ]
+		$this->addItem( array(
+			'Description' => $pkgAttr['smartsendClass'],
+			'Length' => $pkgAttr['smartsendLength'],
+			'Height' => $pkgAttr['smartsendWidth'],
+			'Depth' => $pkgAttr['smartsendDepth'],
+			'Weight' => $pkgWeight
+		));
+
+		// More to pack? Deduct from $qty and send on
+		$newQty = $qty - $pkgTakes;
+
+		if ($newQty)
+		{
+			$this->_packOne($newQty, $itemName, $itemData, $packages);
+		}
+	}
+
+
+	/**
 	 * Go through registered items and check for fixed price / normal class shipping types.
 	 * Convert fixed price items to 'Satchel/Bag' if they are.
 	 */
@@ -501,7 +615,7 @@ class smartSendQuote extends smartSendAPI
 	 * @param $arr1 - Must have 3 fields
 	 * @param $arr2 - Must have 3 fields
 	 *
-	 * @return bool - Whether $arr1 first in $arr2, true or false
+	 * @return bool - Whether $arr1 fits in $arr2, true or false
 	 */
 	public static function dimsFit( $arr1, $arr2 )
 	{
@@ -529,6 +643,48 @@ class smartSendQuote extends smartSendAPI
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Determine potential capacity of $arr2 into $arr1
+	 *
+	 * Will return 0 (zero) if some dimensions are missing
+	 *
+	 * @param $arr1 - What will fit
+	 * @param $arr2 - What to fit in to
+	 *
+	 * @return bool|float|int - Either false (won't fit) or a number (0 or more)
+	 */
+	public static function volumeFit( $arr1, $arr2 )
+	{
+		if (empty($arr1[2]) || empty($arr2[2]) )
+			return 0;
+
+		$vol1 = $arr1[0]*$arr1[1]*$arr1[2];
+		$vol2 = $arr2[0]*$arr2[1]*$arr2[2];
+
+		if ($vol1 > $vol2 )
+			return 'toobig';
+
+		if (!self::dimsFit($arr1, $arr2))
+			return 'toobig';
+
+		$fits = floor($vol2/$vol1);
+
+		// Weight check
+		if (!empty($arr1[3]) && !empty($arr2[3]))
+		{
+			$w1 = $arr1[3];
+			$w2 = $arr2[3];
+
+			if ($w1 > $w2 )
+				$fits = 'tooheavy';
+
+			// Maximum is how many will fit by weight
+			else if ($w1*$fits > $w2)
+				$fits = floor($w2 / $w1);
+		}
+		return $fits;
 	}
 
 	public function __get($k)

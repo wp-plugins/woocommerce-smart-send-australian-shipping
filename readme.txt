@@ -42,6 +42,10 @@ Upgrade through dashboard for added control over results users see and bug fixes
 
 == Changelog ==
 
+= 2.1.6 =
+
+ - Bug fix in HTML patterns
+
 = 2.1.5 =
 
 - Checkout form - postcode/phone restrictions imposed only on Australia

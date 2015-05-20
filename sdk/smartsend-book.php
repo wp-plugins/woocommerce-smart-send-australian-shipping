@@ -161,6 +161,23 @@ class smartSendBook extends smartSendAPI
     }
 
     /**
+     * Return the packing list, if set
+     *
+     * @return bool|mixed - Packing list
+     */
+    public function getPackingList()
+    {
+        $cachePath = SSCACHE.'quotes/packing_'.$this->getCacheKey();
+        if (file_exists($cachePath))
+        {
+            $packing = file_get_contents( $cachePath );
+            $this->packingList = unserialize($packing);
+            return $this->packingList;
+        }
+        return false;
+    }
+
+    /**
      * Set an array of params all at once.
      *
      * @param $arr - Array of values to be set
